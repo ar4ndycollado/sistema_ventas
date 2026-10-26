@@ -13,7 +13,7 @@ PERMISOS = {
     "compras":      ["ADMINISTRADOR", "BODEGUERO"],
     "ventas":       ["ADMINISTRADOR", "VENDEDOR", "CAJERO"],
     "cotizaciones": ["ADMINISTRADOR", "VENDEDOR"],
-    "caja":         ["ADMINISTRADOR", "CAJERO"],
+    "caja":         ["ADMINISTRADOR", "CAJERO", "VENDEDOR"],
     "kardex":       ["ADMINISTRADOR", "BODEGUERO"],
     "reportes":     ["ADMINISTRADOR"],
     "usuarios":     ["ADMINISTRADOR"],
