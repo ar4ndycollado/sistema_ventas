@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block titulo %}Clientes{% endblock %}
+
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <h1>Clientes</h1>
+        <p class="subtitulo">{{ clientes | length }} clientes registrados</p>
+    </div>
+    <a href="{{ url_for('clientes.nuevo') }}" class="boton boton-principal">+ Nuevo cliente</a>
+</div>
+
+<div class="tarjeta">
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>Teléfono</th>
+                <th>Correo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+            <tr>
+                <td>{{ cliente.id_cliente }}</td>
+                <td>{{ cliente.nombre }}</td>
+                <td>{{ cliente.direccion or '' }}</td>
+                <td>{{ cliente.telefono or '' }}</td>
+                <td>{{ cliente.correo or '' }}</td>
+                <td class="acciones">
+                    <a href="{{ url_for('clientes.editar', id_cliente=cliente.id_cliente) }}" class="boton-chico">Editar</a>
+                    <form method="POST" action="{{ url_for('clientes.eliminar', id_cliente=cliente.id_cliente) }}"
+                        onsubmit="return confirm('¿Desea eliminar este cliente?');">
+                        <button type="submit" class="boton-chico boton-peligro">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="vacio">No hay clientes registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

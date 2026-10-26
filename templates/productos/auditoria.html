@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block titulo %}Auditoría de precios{% endblock %}
+
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <h1>Auditoría de precios</h1>
+        <p class="subtitulo">Registros generados automáticamente por el trigger TRG_AUDITORIA_PRECIO</p>
+    </div>
+    <a href="{{ url_for('productos.lista') }}" class="boton boton-secundario">Volver a productos</a>
+</div>
+
+<div class="tarjeta">
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Producto</th>
+                <th class="texto-derecha">Precio anterior</th>
+                <th class="texto-derecha">Precio nuevo</th>
+                <th>Usuario</th>
+                <th>Fecha</th>
+                <th>Operación</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for registro in registros %}
+            <tr>
+                <td>{{ registro.id_auditoria }}</td>
+                <td>{{ registro.producto }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(registro.precio_anterior) }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(registro.precio_nuevo) }}</td>
+                <td>{{ registro.usuario }}</td>
+                <td>{{ registro.fecha }}</td>
+                <td>{{ registro.tipo_operacion }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="vacio">Aún no hay cambios de precio registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

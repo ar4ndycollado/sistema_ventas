@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+</head>
+<body class="pagina-login">
+    <div class="tarjeta-login">
+        <h1>Sistema de Ventas</h1>
+        <p class="subtitulo">Ingrese sus credenciales</p>
+
+        {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
+            <div class="alerta alerta-{{ categoria }}">{{ mensaje }}</div>
+        {% endfor %}
+
+        <form method="POST" class="formulario">
+            <label for="usuario">Usuario</label>
+            <input type="text" id="usuario" name="usuario" autofocus>
+
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" name="password">
+
+            <button type="submit" class="boton boton-principal">Iniciar sesión</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block titulo %}Cotizaciones{% endblock %}
+
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <h1>Cotizaciones</h1>
+        <p class="subtitulo">{{ cotizaciones | length }} cotizaciones · No afectan el inventario</p>
+    </div>
+    <a href="{{ url_for('cotizaciones.nueva') }}" class="boton boton-principal">+ Nueva cotización</a>
+</div>
+
+<div class="tarjeta">
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>Fecha</th>
+                <th>Vence</th>
+                <th>Cliente</th>
+                <th>Usuario</th>
+                <th class="texto-derecha">Total</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cotizacion in cotizaciones %}
+            <tr>
+                <td>{{ cotizacion.id_cotizacion }}</td>
+                <td>{{ cotizacion.fecha }}</td>
+                <td>{{ cotizacion.vencimiento or '—' }}</td>
+                <td>{{ cotizacion.cliente }}</td>
+                <td>{{ cotizacion.usuario }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(cotizacion.total or 0) }}</td>
+                <td>
+                    {% if cotizacion.estado == 'A' %}
+                        <span class="etiqueta etiqueta-azul">Abierta</span>
+                    {% elif cotizacion.estado == 'F' %}
+                        <span class="etiqueta etiqueta-verde">Facturada</span>
+                    {% else %}
+                        <span class="etiqueta etiqueta-gris">Caducada</span>
+                    {% endif %}
+                </td>
+                <td><a href="{{ url_for('cotizaciones.detalle', id_cotizacion=cotizacion.id_cotizacion) }}" class="boton-chico">Ver detalle</a></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="vacio">No hay cotizaciones registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

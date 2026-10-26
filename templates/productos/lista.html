@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block titulo %}Productos{% endblock %}
+
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <h1>Productos</h1>
+        <p class="subtitulo">{{ productos | length }} productos en esta lista</p>
+    </div>
+    {% if tiene_rol(['ADMINISTRADOR', 'BODEGUERO']) %}
+    <div class="botones-form">
+        <a href="{{ url_for('productos.auditoria') }}" class="boton boton-secundario">Auditoría de precios</a>
+        <a href="{{ url_for('productos.nuevo') }}" class="boton boton-principal">+ Nuevo producto</a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="filtros">
+    <a href="{{ url_for('productos.lista') }}" class="{{ 'activo' if filtro != 'bajo' }}">Todos</a>
+    <a href="{{ url_for('productos.lista', filtro='bajo') }}" class="{{ 'activo' if filtro == 'bajo' }}">Bajo stock</a>
+</div>
+
+<div class="tarjeta">
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th class="texto-derecha">P. compra</th>
+                <th class="texto-derecha">P. venta</th>
+                <th class="texto-derecha">Stock</th>
+                <th class="texto-derecha">Mínimo</th>
+                <th>Existencia</th>
+                <th>Estado</th>
+                {% if tiene_rol(['ADMINISTRADOR', 'BODEGUERO']) %}<th>Acciones</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in productos %}
+            <tr class="{{ 'fila-inactiva' if producto.estado == 'I' }}">
+                <td>{{ producto.id_producto }}</td>
+                <td>{{ producto.nombre }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(producto.precio_compra) }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(producto.precio_venta) }}</td>
+                <td class="texto-derecha"><strong>{{ producto.stock }}</strong></td>
+                <td class="texto-derecha">{{ producto.stock_minimo }}</td>
+                <td>
+                    {% if producto.clasificacion == 'AGOTADO' %}
+                        <span class="etiqueta etiqueta-roja">Agotado</span>
+                    {% elif producto.clasificacion == 'STOCK BAJO' %}
+                        <span class="etiqueta etiqueta-amarilla">Stock bajo</span>
+                    {% else %}
+                        <span class="etiqueta etiqueta-verde">Disponible</span>
+                    {% endif %}
+                </td>
+                <td>{{ 'Activo' if producto.estado == 'A' else 'Inactivo' }}</td>
+                {% if tiene_rol(['ADMINISTRADOR', 'BODEGUERO']) %}
+                <td class="acciones">
+                    <a href="{{ url_for('productos.editar', id_producto=producto.id_producto) }}" class="boton-chico">Editar</a>
+                    <form method="POST" action="{{ url_for('productos.cambiar_estado', id_producto=producto.id_producto) }}">
+                        <button type="submit" class="boton-chico {{ 'boton-peligro' if producto.estado == 'A' }}">
+                            {{ 'Desactivar' if producto.estado == 'A' else 'Activar' }}
+                        </button>
+                    </form>
+                </td>
+                {% endif %}
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" class="vacio">No hay productos en esta lista.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

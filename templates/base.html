@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block titulo %}Sistema de Ventas{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+</head>
+<body>
+    <aside class="menu">
+        <h2 class="logo">Sistema de Ventas</h2>
+
+        <div class="usuario-info">
+            <strong>{{ session['usuario'] }}</strong>
+            <span>{{ session['roles'] | join(', ') }}</span>
+        </div>
+
+        <nav>
+            <a href="{{ url_for('inicio.inicio') }}">Inicio</a>
+            {% if tiene_permiso('clientes') %}<a href="{{ url_for('clientes.lista') }}">Clientes</a>{% endif %}
+            {% if tiene_permiso('proveedores') %}<a href="{{ url_for('proveedores.lista') }}">Proveedores</a>{% endif %}
+            {% if tiene_permiso('productos') %}<a href="{{ url_for('productos.lista') }}">Productos</a>{% endif %}
+            {% if tiene_permiso('compras') %}<a href="{{ url_for('compras.lista') }}">Compras</a>{% endif %}
+            {% if tiene_permiso('ventas') %}<a href="{{ url_for('ventas.lista') }}">Ventas</a>{% endif %}
+            {% if tiene_permiso('cotizaciones') %}<a href="{{ url_for('cotizaciones.lista') }}">Cotizaciones</a>{% endif %}
+            {% if tiene_permiso('caja') %}<a href="#">Caja</a>{% endif %}
+            {% if tiene_permiso('kardex') %}<a href="#">Kardex</a>{% endif %}
+            {% if tiene_permiso('reportes') %}<a href="#">Reportes</a>{% endif %}
+            {% if tiene_permiso('usuarios') %}<a href="#">Usuarios</a>{% endif %}
+        </nav>
+
+        <a href="{{ url_for('auth.logout') }}" class="cerrar-sesion">Cerrar sesión</a>
+    </aside>
+
+    <main class="contenido">
+        {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
+            <div class="alerta alerta-{{ categoria }}">{{ mensaje }}</div>
+        {% endfor %}
+
+        {% block contenido %}{% endblock %}
+    </main>
+</body>
+</html>

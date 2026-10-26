@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ 'Nuevo cliente' if es_nuevo else 'Editar cliente' }}{% endblock %}
+
+{% block contenido %}
+<h1>{{ 'Nuevo cliente' if es_nuevo else 'Editar cliente' }}</h1>
+<p class="subtitulo">Los campos con <span class="obligatorio">*</span> son obligatorios.</p>
+
+<div class="tarjeta tarjeta-formulario">
+    <form method="POST" class="formulario">
+        <label for="nombre">Nombre <span class="obligatorio">*</span></label>
+        <input type="text" id="nombre" name="nombre" value="{{ cliente.nombre or '' }}" maxlength="100">
+
+        <label for="direccion">Dirección</label>
+        <input type="text" id="direccion" name="direccion" value="{{ cliente.direccion or '' }}" maxlength="150">
+
+        <label for="telefono">Teléfono</label>
+        <input type="text" id="telefono" name="telefono" value="{{ cliente.telefono or '' }}" maxlength="15">
+
+        <label for="correo">Correo</label>
+        <input type="email" id="correo" name="correo" value="{{ cliente.correo or '' }}" maxlength="100">
+
+        <div class="botones-form">
+            <button type="submit" class="boton boton-principal">Guardar</button>
+            <a href="{{ url_for('clientes.lista') }}" class="boton boton-secundario">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

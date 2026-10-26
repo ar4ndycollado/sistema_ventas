@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ 'Nuevo producto' if es_nuevo else 'Editar producto' }}{% endblock %}
+
+{% block contenido %}
+<h1>{{ 'Nuevo producto' if es_nuevo else 'Editar producto' }}</h1>
+<p class="subtitulo">Los campos con <span class="obligatorio">*</span> son obligatorios.</p>
+
+<div class="tarjeta tarjeta-formulario">
+    <form method="POST" class="formulario">
+        <label for="nombre">Nombre <span class="obligatorio">*</span></label>
+        <input type="text" id="nombre" name="nombre" value="{{ producto.nombre or '' }}" maxlength="100">
+
+        <div class="fila-campos">
+            <div>
+                <label for="precio_compra">Precio de compra (Q) <span class="obligatorio">*</span></label>
+                <input type="number" id="precio_compra" name="precio_compra" step="0.01" min="0"
+                    value="{{ producto.precio_compra }}">
+            </div>
+            <div>
+                <label for="precio_venta">Precio de venta (Q) <span class="obligatorio">*</span></label>
+                <input type="number" id="precio_venta" name="precio_venta" step="0.01" min="0"
+                    value="{{ producto.precio_venta }}">
+            </div>
+        </div>
+
+        <div class="fila-campos">
+            <div>
+                <label for="stock_minimo">Stock mínimo <span class="obligatorio">*</span></label>
+                <input type="number" id="stock_minimo" name="stock_minimo" step="1" min="0"
+                    value="{{ producto.stock_minimo }}">
+            </div>
+            <div>
+                <label>Stock actual</label>
+                <input type="text" value="{{ producto.stock }}" disabled>
+            </div>
+        </div>
+
+        <p class="nota">
+            El stock no se modifica manualmente: aumenta con las compras y disminuye con las ventas,
+            y cada movimiento queda registrado en el Kardex.
+        </p>
+
+        <div class="botones-form">
+            <button type="submit" class="boton boton-principal">Guardar</button>
+            <a href="{{ url_for('productos.lista') }}" class="boton boton-secundario">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

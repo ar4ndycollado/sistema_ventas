@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block titulo %}Compra #{{ compra.id_compra }}{% endblock %}
+
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <h1>Compra #{{ compra.id_compra }}</h1>
+        <p class="subtitulo">{{ compra.fecha }} · Registrada por {{ compra.usuario }}</p>
+    </div>
+    <a href="{{ url_for('compras.lista') }}" class="boton boton-secundario">Volver a compras</a>
+</div>
+
+<div class="tarjeta">
+    <p><strong>Proveedor:</strong> {{ compra.proveedor }} &nbsp;·&nbsp; <strong>NIT:</strong> {{ compra.nit }}</p>
+</div>
+
+<div class="tarjeta">
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Producto</th>
+                <th class="texto-derecha">Cantidad</th>
+                <th class="texto-derecha">Precio costo</th>
+                <th class="texto-derecha">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for linea in lineas %}
+            <tr>
+                <td>{{ linea.id_producto }}</td>
+                <td>{{ linea.nombre }}</td>
+                <td class="texto-derecha">{{ linea.cantidad }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(linea.precio_costo) }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(linea.subtotal) }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="vacio">Esta compra no tiene productos.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p class="total">Total: Q {{ '%.2f' | format(compra.total) }}</p>
+</div>
+{% endblock %}

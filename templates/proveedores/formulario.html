@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ 'Nuevo proveedor' if es_nuevo else 'Editar proveedor' }}{% endblock %}
+
+{% block contenido %}
+<h1>{{ 'Nuevo proveedor' if es_nuevo else 'Editar proveedor' }}</h1>
+<p class="subtitulo">Los campos con <span class="obligatorio">*</span> son obligatorios.</p>
+
+<div class="tarjeta tarjeta-formulario">
+    <form method="POST" class="formulario">
+        <label for="nombre">Nombre <span class="obligatorio">*</span></label>
+        <input type="text" id="nombre" name="nombre" value="{{ proveedor.nombre or '' }}" maxlength="100">
+
+        <label for="nit">NIT <span class="obligatorio">*</span></label>
+        <input type="text" id="nit" name="nit" value="{{ proveedor.nit or '' }}" maxlength="20">
+
+        <label for="direccion">Dirección</label>
+        <input type="text" id="direccion" name="direccion" value="{{ proveedor.direccion or '' }}" maxlength="150">
+
+        <label for="telefono">Teléfono</label>
+        <input type="text" id="telefono" name="telefono" value="{{ proveedor.telefono or '' }}" maxlength="15">
+
+        <div class="botones-form">
+            <button type="submit" class="boton boton-principal">Guardar</button>
+            <a href="{{ url_for('proveedores.lista') }}" class="boton boton-secundario">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

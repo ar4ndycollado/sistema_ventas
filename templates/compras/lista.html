@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block titulo %}Compras{% endblock %}
+
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <h1>Compras</h1>
+        <p class="subtitulo">{{ compras | length }} compras registradas</p>
+    </div>
+    <a href="{{ url_for('compras.nueva') }}" class="boton boton-principal">+ Nueva compra</a>
+</div>
+
+<div class="tarjeta">
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>Fecha</th>
+                <th>Proveedor</th>
+                <th>Usuario</th>
+                <th class="texto-derecha">Productos</th>
+                <th class="texto-derecha">Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for compra in compras %}
+            <tr>
+                <td>{{ compra.id_compra }}</td>
+                <td>{{ compra.fecha }}</td>
+                <td>{{ compra.proveedor }}</td>
+                <td>{{ compra.usuario }}</td>
+                <td class="texto-derecha">{{ compra.productos }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(compra.total) }}</td>
+                <td><a href="{{ url_for('compras.detalle', id_compra=compra.id_compra) }}" class="boton-chico">Ver detalle</a></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="vacio">No hay compras registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

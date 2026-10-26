@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block titulo %}Venta #{{ venta.id_venta }}{% endblock %}
+
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <h1>Venta #{{ venta.id_venta }}</h1>
+        <p class="subtitulo">{{ venta.fecha }} · Atendió {{ venta.usuario }}</p>
+    </div>
+    <a href="{{ url_for('ventas.lista') }}" class="boton boton-secundario">Volver a ventas</a>
+</div>
+
+<div class="tarjeta">
+    <p>
+        <strong>Cliente:</strong> {{ venta.cliente }}
+        &nbsp;·&nbsp; <strong>Apertura de caja:</strong> #{{ venta.id_apertura or '—' }}
+        {% if venta.id_cotizacion %}&nbsp;·&nbsp; <strong>Cotización:</strong> #{{ venta.id_cotizacion }}{% endif %}
+    </p>
+</div>
+
+<div class="tarjeta">
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Producto</th>
+                <th class="texto-derecha">Cantidad</th>
+                <th class="texto-derecha">Precio</th>
+                <th class="texto-derecha">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for linea in lineas %}
+            <tr>
+                <td>{{ linea.id_producto }}</td>
+                <td>{{ linea.nombre }}</td>
+                <td class="texto-derecha">{{ linea.cantidad }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(linea.precio_venta) }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(linea.subtotal) }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="vacio">Esta venta no tiene productos.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p class="total">Total: Q {{ '%.2f' | format(venta.total) }}</p>
+</div>
+{% endblock %}

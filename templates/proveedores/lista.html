@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block titulo %}Proveedores{% endblock %}
+
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <h1>Proveedores</h1>
+        <p class="subtitulo">{{ proveedores | length }} proveedores registrados</p>
+    </div>
+    <a href="{{ url_for('proveedores.nuevo') }}" class="boton boton-principal">+ Nuevo proveedor</a>
+</div>
+
+<div class="tarjeta">
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>NIT</th>
+                <th>Dirección</th>
+                <th>Teléfono</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for proveedor in proveedores %}
+            <tr>
+                <td>{{ proveedor.id_proveedor }}</td>
+                <td>{{ proveedor.nombre }}</td>
+                <td>{{ proveedor.nit }}</td>
+                <td>{{ proveedor.direccion or '' }}</td>
+                <td>{{ proveedor.telefono or '' }}</td>
+                <td class="acciones">
+                    <a href="{{ url_for('proveedores.editar', id_proveedor=proveedor.id_proveedor) }}" class="boton-chico">Editar</a>
+                    <form method="POST" action="{{ url_for('proveedores.eliminar', id_proveedor=proveedor.id_proveedor) }}"
+                        onsubmit="return confirm('¿Desea eliminar este proveedor?');">
+                        <button type="submit" class="boton-chico boton-peligro">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="vacio">No hay proveedores registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

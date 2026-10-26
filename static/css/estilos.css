@@ -1,0 +1,373 @@
+/* ===== Colores y fuente generales ===== */
+:root {
+    --fondo: #f5f6f8;
+    --blanco: #ffffff;
+    --texto: #1f2937;
+    --texto-suave: #6b7280;
+    --borde: #e5e7eb;
+    --principal: #2563eb;
+    --principal-oscuro: #1d4ed8;
+    --exito: #16a34a;
+    --error: #dc2626;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--fondo);
+    color: var(--texto);
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ===== Menú lateral ===== */
+.menu {
+    width: 220px;
+    background: var(--blanco);
+    border-right: 1px solid var(--borde);
+    padding: 24px 16px;
+}
+
+.logo {
+    font-size: 18px;
+    margin-bottom: 24px;
+    color: var(--principal);
+}
+
+.menu nav a {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--texto);
+    text-decoration: none;
+    margin-bottom: 4px;
+}
+
+.menu nav a:hover {
+    background: var(--fondo);
+    color: var(--principal);
+}
+
+/* ===== Área de contenido ===== */
+.contenido {
+    flex: 1;
+    padding: 32px;
+}
+
+h1 { font-size: 24px; margin-bottom: 8px; }
+
+.subtitulo { color: var(--texto-suave); margin-bottom: 24px; }
+
+/* ===== Información del usuario en el menú ===== */
+.usuario-info {
+    background: var(--fondo);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.usuario-info span {
+    display: block;
+    color: var(--texto-suave);
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+}
+
+.menu nav { flex: 1; }
+
+.cerrar-sesion {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--error);
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.cerrar-sesion:hover { background: #fef2f2; }
+
+/* ===== Página de login ===== */
+.pagina-login {
+    justify-content: center;
+    align-items: center;
+}
+
+.tarjeta-login {
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 32px;
+    width: 100%;
+    max-width: 360px;
+}
+
+/* ===== Formularios ===== */
+.formulario label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: var(--texto-suave);
+}
+
+.formulario input,
+.formulario select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    font-size: 15px;
+    margin-bottom: 16px;
+}
+
+.formulario input:focus,
+.formulario select:focus {
+    outline: none;
+    border-color: var(--principal);
+}
+
+/* ===== Botones ===== */
+.boton {
+    display: inline-block;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.boton-principal {
+    background: var(--principal);
+    color: var(--blanco);
+    width: 100%;
+}
+
+.boton-principal:hover { background: var(--principal-oscuro); }
+
+/* ===== Mensajes (alertas) ===== */
+.alerta {
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.alerta-error {
+    background: #fef2f2;
+    color: var(--error);
+    border: 1px solid #fecaca;
+}
+
+.alerta-exito {
+    background: #f0fdf4;
+    color: var(--exito);
+    border: 1px solid #bbf7d0;
+}
+
+/* ===== Encabezado de cada módulo ===== */
+.encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+/* El botón principal ocupa todo el ancho solo en el login */
+.boton-principal { width: auto; }
+.tarjeta-login .boton-principal { width: 100%; }
+
+.boton-secundario {
+    background: var(--blanco);
+    color: var(--texto);
+    border: 1px solid var(--borde);
+}
+
+.boton-secundario:hover { border-color: var(--principal); color: var(--principal); }
+
+.botones-form { display: flex; gap: 8px; }
+
+/* ===== Tarjetas ===== */
+.tarjeta {
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 20px;
+    overflow-x: auto;
+}
+
+.tarjeta-formulario { max-width: 520px; }
+
+/* ===== Tablas ===== */
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.tabla th {
+    text-align: left;
+    color: var(--texto-suave);
+    font-weight: 600;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--borde);
+}
+
+.tabla td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--borde);
+}
+
+.tabla tbody tr:last-child td { border-bottom: none; }
+.tabla tbody tr:hover { background: var(--fondo); }
+
+.vacio {
+    text-align: center;
+    color: var(--texto-suave);
+    padding: 24px;
+}
+
+/* ===== Botones pequeños de las tablas ===== */
+.acciones { display: flex; gap: 8px; }
+.acciones form { margin: 0; }
+
+.boton-chico {
+    padding: 6px 10px;
+    font-size: 13px;
+    border-radius: 6px;
+    border: 1px solid var(--borde);
+    background: var(--blanco);
+    color: var(--texto);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.boton-chico:hover { border-color: var(--principal); color: var(--principal); }
+.boton-peligro:hover { border-color: var(--error); color: var(--error); }
+
+.obligatorio { color: var(--error); }
+
+/* ===== Filtros (pestañas) ===== */
+.filtros {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.filtros a {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--borde);
+    background: var(--blanco);
+    color: var(--texto-suave);
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.filtros a.activo {
+    background: var(--principal);
+    border-color: var(--principal);
+    color: var(--blanco);
+}
+
+/* ===== Etiquetas de estado ===== */
+.etiqueta {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.etiqueta-verde    { background: #f0fdf4; color: var(--exito); }
+.etiqueta-amarilla { background: #fefce8; color: #a16207; }
+.etiqueta-roja     { background: #fef2f2; color: var(--error); }
+.etiqueta-gris     { background: var(--fondo); color: var(--texto-suave); }
+
+/* ===== Utilidades ===== */
+.texto-derecha { text-align: right; }
+
+.fila-inactiva td { color: var(--texto-suave); }
+
+.fila-campos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.formulario input:disabled {
+    background: var(--fondo);
+    color: var(--texto-suave);
+}
+
+.nota {
+    font-size: 13px;
+    color: var(--texto-suave);
+    background: var(--fondo);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+}
+
+/* ===== Varias tarjetas en una misma página ===== */
+.tarjeta + .tarjeta { margin-top: 16px; }
+
+.titulo-tarjeta {
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+/* ===== Formulario en una sola fila ===== */
+.formulario-linea {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 8px;
+}
+
+.formulario-linea input,
+.formulario-linea select { margin-bottom: 0; }
+
+.formulario-linea > div { min-width: 140px; }
+
+.campo-ancho { flex: 1; min-width: 260px; }
+
+/* ===== Total ===== */
+.total {
+    text-align: right;
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 12px;
+}
+
+/* ===== Avisos informativos ===== */
+.aviso {
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.aviso-ok {
+    background: #eff6ff;
+    color: var(--principal-oscuro);
+    border: 1px solid #bfdbfe;
+}
+
+.aviso-alerta {
+    background: #fefce8;
+    color: #a16207;
+    border: 1px solid #fde68a;
+}
+
+.etiqueta-azul { background: #eff6ff; color: var(--principal-oscuro); }
+
+/* =====

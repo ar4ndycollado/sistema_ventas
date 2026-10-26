@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block titulo %}Nueva venta{% endblock %}
+
+{% block contenido %}
+<h1>Nueva venta</h1>
+<p class="subtitulo">1. Agregue los productos &nbsp;·&nbsp; 2. Seleccione el cliente &nbsp;·&nbsp; 3. Registre la venta</p>
+
+<!-- Estado de la caja del usuario -->
+{% if apertura %}
+<div class="aviso aviso-ok">
+    Caja abierta: <strong>{{ apertura.caja }}</strong> (apertura #{{ apertura.id_apertura }} desde {{ apertura.fecha_apertura }})
+    &nbsp;·&nbsp; Monto esperado: Q {{ '%.2f' | format(apertura.monto_esperado) }}
+</div>
+{% else %}
+<div class="aviso aviso-alerta">
+    No tiene una caja abierta. La venta será rechazada hasta que abra una caja.
+</div>
+{% endif %}
+
+<!-- Paso 1: agregar productos -->
+<div class="tarjeta">
+    <h3 class="titulo-tarjeta">Agregar producto</h3>
+    <form method="POST" action="{{ url_for('ventas.agregar') }}" class="formulario formulario-linea">
+        <div class="campo-ancho">
+            <label for="id_producto">Producto</label>
+            <select id="id_producto" name="id_producto">
+                <option value="">-- Seleccione --</option>
+                {% for producto in productos %}
+                <option value="{{ producto.id_producto }}">
+                    {{ producto.nombre }} — Q {{ '%.2f' | format(producto.precio_venta) }} (stock: {{ producto.stock }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="cantidad">Cantidad</label>
+            <input type="number" id="cantidad" name="cantidad" min="1" step="1" value="1">
+        </div>
+        <div>
+            <button type="submit" class="boton boton-principal">Agregar</button>
+        </div>
+    </form>
+</div>
+
+<!-- Carrito -->
+<div class="tarjeta">
+    <h3 class="titulo-tarjeta">Productos de la venta</h3>
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th class="texto-derecha">Cantidad</th>
+                <th class="texto-derecha">Precio</th>
+                <th class="texto-derecha">Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for linea in carrito %}
+            <tr>
+                <td>{{ linea.nombre }}</td>
+                <td class="texto-derecha">{{ linea.cantidad }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(linea.precio_venta) }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(linea.subtotal) }}</td>
+                <td class="acciones">
+                    <form method="POST" action="{{ url_for('ventas.quitar', indice=loop.index0) }}">
+                        <button type="submit" class="boton-chico boton-peligro">Quitar</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="vacio">Aún no ha agregado productos.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p class="total">Total: Q {{ '%.2f' | format(total) }}</p>
+</div>
+
+<!-- Paso 2 y 3: cliente y registrar -->
+<div class="tarjeta">
+    <form method="POST" action="{{ url_for('ventas.registrar') }}" class="formulario formulario-linea">
+        <div class="campo-ancho">
+            <label for="id_cliente">Cliente</label>
+            <select id="id_cliente" name="id_cliente">
+                <option value="">-- Seleccione --</option>
+                {% for cliente in clientes %}
+                <option value="{{ cliente.id_cliente }}">{{ cliente.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="boton boton-principal">Registrar venta</button>
+        </div>
+    </form>
+
+    <form method="POST" action="{{ url_for('ventas.cancelar') }}"
+        onsubmit="return confirm('¿Cancelar la venta y vaciar el carrito?');">
+        <button type="submit" class="boton-chico boton-peligro">Cancelar venta</button>
+    </form>
+</div>
+{% endblock %}

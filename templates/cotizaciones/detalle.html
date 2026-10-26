@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block titulo %}Cotización #{{ cotizacion.id_cotizacion }}{% endblock %}
+
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <h1>Cotización #{{ cotizacion.id_cotizacion }}</h1>
+        <p class="subtitulo">{{ cotizacion.fecha }} · Elaborada por {{ cotizacion.usuario }}</p>
+    </div>
+    <a href="{{ url_for('cotizaciones.lista') }}" class="boton boton-secundario">Volver a cotizaciones</a>
+</div>
+
+<div class="tarjeta">
+    <p>
+        <strong>Cliente:</strong> {{ cotizacion.cliente }}
+        &nbsp;·&nbsp; <strong>Válida hasta:</strong> {{ cotizacion.vencimiento or '—' }}
+        &nbsp;·&nbsp; <strong>Estado:</strong>
+        {% if cotizacion.estado == 'A' %}
+            <span class="etiqueta etiqueta-azul">Abierta</span>
+        {% elif cotizacion.estado == 'F' %}
+            <span class="etiqueta etiqueta-verde">Facturada</span>
+        {% else %}
+            <span class="etiqueta etiqueta-gris">Caducada</span>
+        {% endif %}
+    </p>
+
+    {% if cotizacion.id_venta %}
+    <p class="nota" style="margin-top: 12px; margin-bottom: 0;">
+        Esta cotización se convirtió en la
+        <a href="{{ url_for('ventas.detalle', id_venta=cotizacion.id_venta) }}">venta #{{ cotizacion.id_venta }}</a>.
+    </p>
+    {% endif %}
+</div>
+
+<div class="tarjeta">
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Producto</th>
+                <th class="texto-derecha">Cantidad</th>
+                <th class="texto-derecha">Precio cotizado</th>
+                <th class="texto-derecha">Subtotal</th>
+                <th class="texto-derecha">Stock actual</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for linea in lineas %}
+            <tr>
+                <td>{{ linea.id_producto }}</td>
+                <td>{{ linea.nombre }}</td>
+                <td class="texto-derecha">{{ linea.cantidad }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(linea.precio) }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(linea.subtotal) }}</td>
+                <td class="texto-derecha">{{ linea.stock_actual }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="vacio">Esta cotización no tiene productos.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p class="total">Total cotizado: Q {{ '%.2f' | format(cotizacion.total or 0) }}</p>
+</div>
+
+{% if cotizacion.estado == 'A' and tiene_permiso('ventas') %}
+<div class="tarjeta">
+    <form method="POST" action="{{ url_for('cotizaciones.convertir', id_cotizacion=cotizacion.id_cotizacion) }}"
+        onsubmit="return confirm('¿Convertir esta cotización en venta? Se descontará el inventario.');">
+        <p class="nota">Al convertirla se validará la caja y el stock, y se usarán los precios vigentes del catálogo.</p>
+        <button type="submit" class="boton boton-principal">Convertir en venta</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

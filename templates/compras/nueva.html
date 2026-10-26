@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block titulo %}Nueva compra{% endblock %}
+
+{% block contenido %}
+<h1>Nueva compra</h1>
+<p class="subtitulo">1. Agregue los productos &nbsp;·&nbsp; 2. Seleccione el proveedor &nbsp;·&nbsp; 3. Registre la compra</p>
+
+<!-- Paso 1: agregar productos al carrito -->
+<div class="tarjeta">
+    <h3 class="titulo-tarjeta">Agregar producto</h3>
+    <form method="POST" action="{{ url_for('compras.agregar') }}" class="formulario formulario-linea">
+        <div class="campo-ancho">
+            <label for="id_producto">Producto</label>
+            <select id="id_producto" name="id_producto">
+                <option value="">-- Seleccione --</option>
+                {% for producto in productos %}
+                <option value="{{ producto.id_producto }}">
+                    {{ producto.nombre }} (stock: {{ producto.stock }}, último costo: Q {{ '%.2f' | format(producto.precio_compra) }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="cantidad">Cantidad</label>
+            <input type="number" id="cantidad" name="cantidad" min="1" step="1" value="1">
+        </div>
+        <div>
+            <label for="precio_costo">Precio de costo (Q)</label>
+            <input type="number" id="precio_costo" name="precio_costo" min="0" step="0.01">
+        </div>
+        <div>
+            <button type="submit" class="boton boton-principal">Agregar</button>
+        </div>
+    </form>
+</div>
+
+<!-- Carrito -->
+<div class="tarjeta">
+    <h3 class="titulo-tarjeta">Productos de la compra</h3>
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th class="texto-derecha">Cantidad</th>
+                <th class="texto-derecha">Precio costo</th>
+                <th class="texto-derecha">Subtotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for linea in carrito %}
+            <tr>
+                <td>{{ linea.nombre }}</td>
+                <td class="texto-derecha">{{ linea.cantidad }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(linea.precio_costo) }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(linea.subtotal) }}</td>
+                <td class="acciones">
+                    <form method="POST" action="{{ url_for('compras.quitar', indice=loop.index0) }}">
+                        <button type="submit" class="boton-chico boton-peligro">Quitar</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="vacio">Aún no ha agregado productos.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p class="total">Total: Q {{ '%.2f' | format(total) }}</p>
+</div>
+
+<!-- Paso 2 y 3: proveedor y registrar -->
+<div class="tarjeta">
+    <form method="POST" action="{{ url_for('compras.registrar') }}" class="formulario formulario-linea">
+        <div class="campo-ancho">
+            <label for="id_proveedor">Proveedor</label>
+            <select id="id_proveedor" name="id_proveedor">
+                <option value="">-- Seleccione --</option>
+                {% for proveedor in proveedores %}
+                <option value="{{ proveedor.id_proveedor }}">{{ proveedor.nombre }} (NIT {{ proveedor.nit }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="boton boton-principal">Registrar compra</button>
+        </div>
+    </form>
+
+    <form method="POST" action="{{ url_for('compras.cancelar') }}"
+        onsubmit="return confirm('¿Cancelar la compra y vaciar el carrito?');">
+        <button type="submit" class="boton-chico boton-peligro">Cancelar compra</button>
+    </form>
+</div>
+{% endblock %}

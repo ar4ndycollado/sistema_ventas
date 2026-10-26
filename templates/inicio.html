@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block titulo %}Inicio{% endblock %}
+
+{% block contenido %}
+<h1>Bienvenido, {{ session['usuario'] }}</h1>
+<p class="subtitulo">Rol: {{ session['roles'] | join(', ') }}. Selecciona un módulo en el menú de la izquierda.</p>
+{% endblock %}
