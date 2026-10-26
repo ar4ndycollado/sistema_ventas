@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block titulo %}Historial de caja{% endblock %}
+
+{% block contenido %}
+<h1>Historial de caja</h1>
+<p class="subtitulo">
+    {% if tiene_rol(['ADMINISTRADOR']) %}Aperturas y cierres de todos los usuarios{% else %}Sus aperturas y cierres{% endif %}
+</p>
+
+{% set pestana = 'historial' %}
+{% include "caja/_pestanas.html" %}
+
+<div class="tarjeta">
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>Caja</th>
+                <th>Usuario</th>
+                <th>Apertura</th>
+                <th>Cierre</th>
+                <th class="texto-derecha">Esperado</th>
+                <th class="texto-derecha">Contado</th>
+                <th class="texto-derecha">Diferencia</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for apertura in aperturas %}
+            <tr>
+                <td>{{ apertura.id_apertura }}</td>
+                <td>{{ apertura.caja }}</td>
+                <td>{{ apertura.usuario }}</td>
+                <td>{{ apertura.fecha_apertura }}</td>
+                <td>{{ apertura.fecha_cierre or '—' }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(apertura.monto_esperado or 0) }}</td>
+                <td class="texto-derecha">
+                    {% if apertura.estado == 'C' %}Q {{ '%.2f' | format(apertura.monto_contado or 0) }}{% else %}—{% endif %}
+                </td>
+                <td class="texto-derecha">
+                    {% if apertura.estado == 'C' %}Q {{ '%.2f' | format(apertura.diferencia or 0) }}{% else %}—{% endif %}
+                </td>
+                <td>
+                    {% if apertura.estado == 'A' %}
+                        <span class="etiqueta etiqueta-azul">Abierta</span>
+                    {% else %}
+                        <span class="etiqueta etiqueta-gris">Cerrada</span>
+                    {% endif %}
+                </td>
+                <td><a href="{{ url_for('caja.cierre', id_apertura=apertura.id_apertura) }}" class="boton-chico">Ver</a></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="10" class="vacio">No hay aperturas registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

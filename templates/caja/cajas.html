@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block titulo %}Cajas{% endblock %}
+
+{% block contenido %}
+<h1>Cajas</h1>
+<p class="subtitulo">Catálogo de cajas del negocio</p>
+
+{% set pestana = 'cajas' %}
+{% include "caja/_pestanas.html" %}
+
+<div class="tarjeta">
+    <form method="POST" action="{{ url_for('caja.nueva_caja') }}" class="formulario formulario-linea">
+        <div class="campo-ancho">
+            <label for="nombre">Nueva caja</label>
+            <input type="text" id="nombre" name="nombre" maxlength="50" placeholder="Ej. Caja 2 - Mostrador">
+        </div>
+        <div>
+            <button type="submit" class="boton boton-principal">Agregar</button>
+        </div>
+    </form>
+</div>
+
+<div class="tarjeta">
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Estado</th>
+                <th>En uso por</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for caja in cajas %}
+            <tr class="{{ 'fila-inactiva' if caja.estado == 'I' }}">
+                <td>{{ caja.id_caja }}</td>
+                <td>{{ caja.nombre }}</td>
+                <td>{{ 'Activa' if caja.estado == 'A' else 'Inactiva' }}</td>
+                <td>{{ caja.en_uso_por or '—' }}</td>
+                <td class="acciones">
+                    <form method="POST" action="{{ url_for('caja.estado_caja', id_caja=caja.id_caja) }}">
+                        <button type="submit" class="boton-chico {{ 'boton-peligro' if caja.estado == 'A' }}">
+                            {{ 'Desactivar' if caja.estado == 'A' else 'Activar' }}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="vacio">No hay cajas registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

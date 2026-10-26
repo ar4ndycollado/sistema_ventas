@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block titulo %}Cierre de caja #{{ resumen.id_apertura }}{% endblock %}
+
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <h1>Apertura #{{ resumen.id_apertura }}</h1>
+        <p class="subtitulo">
+            {{ resumen.caja }} · {{ resumen.usuario }} · {{ resumen.fecha_apertura }}
+            {% if resumen.fecha_cierre %} → {{ resumen.fecha_cierre }}{% endif %}
+        </p>
+    </div>
+    <a href="{{ url_for('caja.historial') }}" class="boton boton-secundario">Ver historial</a>
+</div>
+
+{% if resumen.estado == 'A' %}
+<div class="aviso aviso-ok">Esta caja todavía está abierta.</div>
+{% else %}
+<div class="indicadores">
+    <div class="indicador">
+        <span>Monto inicial</span>
+        <strong>Q {{ '%.2f' | format(resumen.monto_inicial) }}</strong>
+    </div>
+    <div class="indicador">
+        <span>Ventas ({{ resumen.cantidad_ventas }})</span>
+        <strong>Q {{ '%.2f' | format(resumen.total_ventas) }}</strong>
+    </div>
+    <div class="indicador">
+        <span>Monto esperado</span>
+        <strong>Q {{ '%.2f' | format(resumen.monto_esperado) }}</strong>
+    </div>
+    <div class="indicador">
+        <span>Monto contado</span>
+        <strong>Q {{ '%.2f' | format(resumen.monto_contado) }}</strong>
+    </div>
+    <div class="indicador">
+        <span>Diferencia</span>
+        <strong>Q {{ '%.2f' | format(resumen.diferencia) }}</strong>
+        {% if resumen.diferencia > 0 %}
+            <span class="etiqueta etiqueta-amarilla">Sobrante</span>
+        {% elif resumen.diferencia < 0 %}
+            <span class="etiqueta etiqueta-roja">Faltante</span>
+        {% else %}
+            <span class="etiqueta etiqueta-verde">Cuadrada</span>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div class="tarjeta">
+    <h3 class="titulo-tarjeta">Ventas de esta apertura</h3>
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Venta</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th class="texto-derecha">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for venta in ventas %}
+            <tr>
+                <td><a href="{{ url_for('ventas.detalle', id_venta=venta.id_venta) }}">#{{ venta.id_venta }}</a></td>
+                <td>{{ venta.fecha }}</td>
+                <td>{{ venta.cliente }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(venta.total) }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="vacio">No hubo ventas en esta apertura.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -370,4 +370,37 @@ h1 { font-size: 24px; margin-bottom: 8px; }
 
 .etiqueta-azul { background: #eff6ff; color: var(--principal-oscuro); }
 
+/* ===== Indicadores (tarjetas con montos) ===== */
+.indicadores {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.indicador {
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.indicador span {
+    display: block;
+    font-size: 13px;
+    color: var(--texto-suave);
+    margin-bottom: 6px;
+}
+
+.indicador strong {
+    display: block;
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.indicador .etiqueta {
+    display: inline-block;
+    margin-bottom: 0;
+}
+
 /* =====

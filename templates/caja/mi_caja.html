@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block titulo %}Mi caja{% endblock %}
+
+{% block contenido %}
+<h1>Mi caja</h1>
+<p class="subtitulo">{{ resumen.caja }} · Apertura #{{ resumen.id_apertura }} · Abierta desde {{ resumen.fecha_apertura }}</p>
+
+{% set pestana = 'mi_caja' %}
+{% include "caja/_pestanas.html" %}
+
+<div class="indicadores">
+    <div class="indicador">
+        <span>Monto inicial</span>
+        <strong>Q {{ '%.2f' | format(resumen.monto_inicial) }}</strong>
+    </div>
+    <div class="indicador">
+        <span>Ventas ({{ resumen.cantidad_ventas }})</span>
+        <strong>Q {{ '%.2f' | format(resumen.total_ventas) }}</strong>
+    </div>
+    <div class="indicador">
+        <span>Monto esperado</span>
+        <strong>Q {{ '%.2f' | format(resumen.monto_inicial + resumen.total_ventas) }}</strong>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <h3 class="titulo-tarjeta">Ventas de esta apertura</h3>
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Venta</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th class="texto-derecha">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for venta in ventas %}
+            <tr>
+                <td><a href="{{ url_for('ventas.detalle', id_venta=venta.id_venta) }}">#{{ venta.id_venta }}</a></td>
+                <td>{{ venta.fecha }}</td>
+                <td>{{ venta.cliente }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(venta.total) }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="vacio">Aún no hay ventas en esta apertura.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="tarjeta tarjeta-formulario">
+    <h3 class="titulo-tarjeta">Cerrar caja</h3>
+    <form method="POST" action="{{ url_for('caja.cerrar') }}" class="formulario"
+        onsubmit="return confirm('¿Cerrar la caja? Ya no podrá registrar ventas en esta apertura.');">
+        <label for="monto_contado">Efectivo contado (Q)</label>
+        <input type="number" id="monto_contado" name="monto_contado" min="0" step="0.01">
+        <p class="nota">Cuente el efectivo físico de la caja. El sistema calculará si hay sobrante o faltante.</p>
+        <button type="submit" class="boton boton-principal">Cerrar caja</button>
+    </form>
+</div>
+{% endblock %}

@@ -4,6 +4,7 @@
 from flask import Flask, session, request, redirect, url_for, flash
 import config
 
+from controllers.caja_controller import caja_bp
 from controllers.cotizaciones_controller import cotizaciones_bp
 from controllers.ventas_controller import ventas_bp
 from controllers.compras_controller import compras_bp
@@ -26,6 +27,7 @@ app.register_blueprint(productos_bp)
 app.register_blueprint(compras_bp)
 app.register_blueprint(ventas_bp)
 app.register_blueprint(cotizaciones_bp)
+app.register_blueprint(caja_bp)
 
 
 @app.before_request

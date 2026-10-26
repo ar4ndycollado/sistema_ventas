@@ -1,0 +1,7 @@
+<div class="filtros">
+    <a href="{{ url_for('caja.mi_caja') }}" class="{{ 'activo' if pestana == 'mi_caja' }}">Mi caja</a>
+    <a href="{{ url_for('caja.historial') }}" class="{{ 'activo' if pestana == 'historial' }}">Historial</a>
+    {% if tiene_rol(['ADMINISTRADOR']) %}
+    <a href="{{ url_for('caja.cajas') }}" class="{{ 'activo' if pestana == 'cajas' }}">Cajas</a>
+    {% endif %}
+</div>
