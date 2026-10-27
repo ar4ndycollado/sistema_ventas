@@ -4,11 +4,12 @@
 
 {% block contenido %}
 <h1>Incidencias de caja</h1>
-<p class="subtitulo">Faltantes y sobrantes en los cierres · Vista VW_INCIDENCIAS_CAJA</p>
+<p class="subtitulo">Faltantes, sobrantes y anulaciones del mes · Base para la toma de decisiones</p>
 
 {% set pestana = 'incidencias' %}
 {% include "caja/_pestanas.html" %}
 
+<!-- Selección del mes -->
 <div class="tarjeta">
     <form method="GET" class="formulario formulario-linea">
         <div>
@@ -21,9 +22,54 @@
     </form>
 </div>
 
-<!-- Resumen por usuario -->
+<!-- Sanciones sugeridas -->
 <div class="tarjeta">
-    <h3 class="titulo-tarjeta">Resumen por usuario <span class="tecnica">GROUP BY · CASE</span></h3>
+    <h3 class="titulo-tarjeta">Sanciones sugeridas <span class="tecnica">VW_SANCIONES_MES · POLITICA_SANCION</span></h3>
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th class="texto-derecha">Faltantes</th>
+                <th class="texto-derecha">Monto faltante</th>
+                <th class="texto-derecha">Anulaciones</th>
+                <th class="texto-derecha">Total</th>
+                <th>Sanción sugerida</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fila in sanciones %}
+            <tr>
+                <td>{{ fila.usuario }}</td>
+                <td class="texto-derecha">{{ fila.faltantes }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(fila.monto_faltante) }}</td>
+                <td class="texto-derecha">{{ fila.anulaciones }}</td>
+                <td class="texto-derecha"><strong>{{ fila.total }}</strong></td>
+                <td>
+                    {% if fila.sancion %}
+                        <span class="etiqueta {{ 'etiqueta-roja' if fila.total >= 3 else 'etiqueta-amarilla' }}">{{ fila.sancion }}</span>
+                    {% else %}
+                        <span class="etiqueta etiqueta-verde">Ninguna</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="vacio">Sin incidencias sancionables en este mes.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p class="nota" style="margin-top: 12px; margin-bottom: 0;">
+        <strong>Política vigente:</strong>
+        {% for nivel in politica %}
+            desde {{ nivel.minimo }} incidencias → {{ nivel.sancion }}{{ ';' if not loop.last else '.' }}
+        {% endfor %}
+        Se cuentan los faltantes no justificados y las ventas anuladas. La decisión final corresponde al administrador.
+    </p>
+</div>
+
+<!-- Resumen de faltantes y sobrantes por usuario -->
+<div class="tarjeta">
+    <h3 class="titulo-tarjeta">Faltantes y sobrantes por usuario <span class="tecnica">GROUP BY · CASE</span></h3>
     <table class="tabla">
         <thead>
             <tr>
@@ -32,7 +78,6 @@
                 <th class="texto-derecha">Monto faltante</th>
                 <th class="texto-derecha">Sobrantes</th>
                 <th class="texto-derecha">Monto sobrante</th>
-                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -43,25 +88,17 @@
                 <td class="texto-derecha">Q {{ '%.2f' | format(fila.monto_faltantes) }}</td>
                 <td class="texto-derecha">{{ fila.sobrantes }}</td>
                 <td class="texto-derecha">Q {{ '%.2f' | format(fila.monto_sobrantes) }}</td>
-                <td>
-                    {% if fila.faltantes >= umbral %}
-                        <span class="etiqueta etiqueta-roja">Revisar</span>
-                    {% endif %}
-                </td>
             </tr>
             {% else %}
-            <tr><td colspan="6" class="vacio">Sin incidencias en este mes.</td></tr>
+            <tr><td colspan="5" class="vacio">Sin faltantes ni sobrantes en este mes.</td></tr>
             {% endfor %}
         </tbody>
     </table>
-    <p class="nota" style="margin-top: 12px; margin-bottom: 0;">
-        Se marca para revisión a quien tenga {{ umbral }} o más faltantes en el mes.
-    </p>
 </div>
 
-<!-- Detalle -->
+<!-- Detalle de faltantes y sobrantes -->
 <div class="tarjeta">
-    <h3 class="titulo-tarjeta">Detalle</h3>
+    <h3 class="titulo-tarjeta">Detalle de cierres con diferencia <span class="tecnica">VW_INCIDENCIAS_CAJA</span></h3>
     <table class="tabla">
         <thead>
             <tr>
@@ -97,11 +134,13 @@
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="7" class="vacio">Sin incidencias en este mes.</td></tr>
+            <tr><td colspan="7" class="vacio">Sin cierres con diferencia en este mes.</td></tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+<!-- Ventas anuladas -->
 <div class="tarjeta">
     <h3 class="titulo-tarjeta">Ventas anuladas <span class="tecnica">VW_ANULACIONES_VENTA</span></h3>
     <table class="tabla">

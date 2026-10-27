@@ -368,3 +368,41 @@ def listar_anulaciones(mes):
                     "motivo": fila[6]
                 })
     return anulaciones
+
+
+def sanciones_mes(mes):
+    """Incidencias sancionables por usuario en el mes, desde la vista VW_SANCIONES_MES."""
+    sanciones = []
+    with obtener_conexion() as conexion:
+        with conexion.cursor() as cursor:
+            cursor.execute("""
+                SELECT usuario, faltantes, monto_faltante, anulaciones,
+                    total_incidencias, sancion_sugerida
+                FROM VW_SANCIONES_MES
+                WHERE mes = :mes
+                ORDER BY total_incidencias DESC, monto_faltante DESC
+            """, {"mes": mes})
+            for fila in cursor.fetchall():
+                sanciones.append({
+                    "usuario": fila[0],
+                    "faltantes": fila[1],
+                    "monto_faltante": fila[2],
+                    "anulaciones": fila[3],
+                    "total": fila[4],
+                    "sancion": fila[5]
+                })
+    return sanciones
+
+
+def listar_politica():
+    politica = []
+    with obtener_conexion() as conexion:
+        with conexion.cursor() as cursor:
+            cursor.execute("""
+                SELECT minimo_incidencias, sancion
+                FROM POLITICA_SANCION
+                ORDER BY minimo_incidencias
+            """)
+            for fila in cursor.fetchall():
+                politica.append({"minimo": fila[0], "sancion": fila[1]})
+    return politica

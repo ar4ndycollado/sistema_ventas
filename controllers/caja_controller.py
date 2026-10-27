@@ -168,8 +168,6 @@ def estado_caja(id_caja):
 
 # ===== Incidencias y vales (solo ADMINISTRADOR) =====
 
-# Cantidad de faltantes en un mes a partir de la cual se sugiere revisar al usuario
-FALTANTES_PARA_REVISION = 3
 
 
 def mes_seleccionado():
@@ -193,7 +191,8 @@ def incidencias():
         incidencias=caja_model.listar_incidencias(mes),
         resumen=caja_model.resumen_incidencias(mes),
         anulaciones=caja_model.listar_anulaciones(mes),
-        umbral=FALTANTES_PARA_REVISION
+        sanciones=caja_model.sanciones_mes(mes),
+        politica=caja_model.listar_politica()
     )
 
 
