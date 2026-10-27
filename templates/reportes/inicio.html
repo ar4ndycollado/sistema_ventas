@@ -15,6 +15,7 @@
         <div class="indicador"><span>Promedio por venta</span><strong>Q {{ '%.2f' | format(indicadores.promedio) }}</strong></div>
         <div class="indicador"><span>Venta más alta</span><strong>Q {{ '%.2f' | format(indicadores.maxima) }}</strong></div>
         <div class="indicador"><span>Venta más baja</span><strong>Q {{ '%.2f' | format(indicadores.minima) }}</strong></div>
+        <div class="indicador"><span>Ventas anuladas</span><strong>{{ indicadores.anuladas }}</strong></div>
     </div>
 </div>
 
@@ -103,6 +104,24 @@
             <p class="vacio">Aún no hay ventas.</p>
             {% endfor %}
         </div>
+    </div>
+</div>
+
+<!-- Cobros por método de pago -->
+<div class="seccion-reporte">
+    <h3>Cobros por método de pago <span class="tecnica">JOIN · GROUP BY · SUM</span></h3>
+    <div class="tarjeta">
+        {% for metodo in por_metodo %}
+        <div class="fila-barra">
+            <div class="fila-barra-texto">
+                <span>{{ metodo.metodo }} ({{ metodo.pagos }} pagos)</span>
+                <strong>Q {{ '%.2f' | format(metodo.total) }}</strong>
+            </div>
+            <div class="barra"><div class="barra-relleno" style="width: {{ metodo.porcentaje }}%;"></div></div>
+        </div>
+        {% else %}
+        <p class="vacio">Aún no hay pagos.</p>
+        {% endfor %}
     </div>
 </div>
 

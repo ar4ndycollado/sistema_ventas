@@ -102,4 +102,35 @@
         </tbody>
     </table>
 </div>
+<div class="tarjeta">
+    <h3 class="titulo-tarjeta">Ventas anuladas <span class="tecnica">VW_ANULACIONES_VENTA</span></h3>
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Venta</th>
+                <th>Anulada</th>
+                <th>Vendió</th>
+                <th>Anuló</th>
+                <th>Cliente</th>
+                <th class="texto-derecha">Total</th>
+                <th>Motivo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for anulacion in anulaciones %}
+            <tr>
+                <td><a href="{{ url_for('ventas.detalle', id_venta=anulacion.id_venta) }}">#{{ anulacion.id_venta }}</a></td>
+                <td>{{ anulacion.fecha }}</td>
+                <td>{{ anulacion.vendedor }}</td>
+                <td>{{ anulacion.anulado_por }}</td>
+                <td>{{ anulacion.cliente }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(anulacion.total) }}</td>
+                <td>{{ anulacion.motivo }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="vacio">Sin anulaciones en este mes.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

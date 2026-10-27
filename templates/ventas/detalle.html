@@ -5,21 +5,35 @@
 {% block contenido %}
 <div class="encabezado">
     <div>
-        <h1>Venta #{{ venta.id_venta }}</h1>
+        <h1>
+            Venta #{{ venta.id_venta }}
+            {% if venta.estado == 'N' %}<span class="etiqueta etiqueta-roja">Anulada</span>{% endif %}
+        </h1>
         <p class="subtitulo">{{ venta.fecha }} · Atendió {{ venta.usuario }}</p>
     </div>
-    <a href="{{ url_for('ventas.lista') }}" class="boton boton-secundario">Volver a ventas</a>
+    <div class="botones-form">
+        <a href="{{ url_for('ventas.recibo', id_venta=venta.id_venta) }}" class="boton boton-principal" target="_blank">Imprimir recibo</a>
+        <a href="{{ url_for('ventas.lista') }}" class="boton boton-secundario">Volver a ventas</a>
+    </div>
 </div>
+
+{% if venta.estado == 'N' %}
+<div class="aviso aviso-alerta">
+    Anulada el <strong>{{ venta.fecha_anulacion }}</strong> por <strong>{{ venta.anulado_por }}</strong>.
+    Motivo: {{ venta.motivo_anulacion }}
+</div>
+{% endif %}
 
 <div class="tarjeta">
     <p>
         <strong>Cliente:</strong> {{ venta.cliente }}
-        &nbsp;·&nbsp; <strong>Apertura de caja:</strong> #{{ venta.id_apertura or '—' }}
+        &nbsp;·&nbsp; <strong>Apertura de caja:</strong> #{{ venta.id_apertura }}
         {% if venta.id_cotizacion %}&nbsp;·&nbsp; <strong>Cotización:</strong> #{{ venta.id_cotizacion }}{% endif %}
     </p>
 </div>
 
 <div class="tarjeta">
+    <h3 class="titulo-tarjeta">Productos</h3>
     <table class="tabla">
         <thead>
             <tr>
@@ -39,15 +53,12 @@
                 <td class="texto-derecha">Q {{ '%.2f' | format(linea.precio_venta) }}</td>
                 <td class="texto-derecha">Q {{ '%.2f' | format(linea.subtotal) }}</td>
             </tr>
-            {% else %}
-            <tr>
-                <td colspan="5" class="vacio">Esta venta no tiene productos.</td>
-            </tr>
             {% endfor %}
         </tbody>
     </table>
     <p class="total">Total: Q {{ '%.2f' | format(venta.total) }}</p>
 </div>
+
 <div class="tarjeta">
     <h3 class="titulo-tarjeta">Pagos</h3>
     <table class="tabla">
@@ -75,4 +86,22 @@
         </tbody>
     </table>
 </div>
+
+<!-- Anulación -->
+{% if venta.estado == 'A' and tiene_rol(['ADMINISTRADOR', 'CAJERO']) %}
+<div class="tarjeta tarjeta-formulario">
+    <h3 class="titulo-tarjeta">Anular venta</h3>
+    {% if venta.caja_abierta %}
+    <form method="POST" action="{{ url_for('ventas.anular', id_venta=venta.id_venta) }}" class="formulario"
+        onsubmit="return confirm('¿Anular la venta #{{ venta.id_venta }}? Se devolverá el stock y se ajustará la caja.');">
+        <label for="motivo">Motivo de la anulación</label>
+        <textarea id="motivo" name="motivo" rows="2" maxlength="200"
+                placeholder="Ejemplo: error en la cantidad registrada"></textarea>
+        <button type="submit" class="boton boton-peligro-lleno">Anular venta</button>
+    </form>
+    {% else %}
+    <p class="nota" style="margin-bottom: 0;">No se puede anular: la caja de esta venta ya fue cerrada.</p>
+    {% endif %}
+</div>
+{% endif %}
 {% endblock %}

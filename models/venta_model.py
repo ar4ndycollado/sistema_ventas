@@ -9,9 +9,9 @@ def listar():
     ventas = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
-            # Se usa la vista VW_RESUMEN_VENTAS creada en el Lab 2
+            # Se usa la vista VW_RESUMEN_VENTAS
             cursor.execute("""
-                SELECT id_venta, fecha, cliente, usuario, total
+                SELECT id_venta, fecha, cliente, usuario, total, estado
                 FROM VW_RESUMEN_VENTAS
                 ORDER BY id_venta DESC
             """)
@@ -21,7 +21,8 @@ def listar():
                     "fecha": fila[1],
                     "cliente": fila[2],
                     "usuario": fila[3],
-                    "total": fila[4]
+                    "total": fila[4],
+                    "estado": fila[5]
                 })
     return ventas
 
@@ -32,10 +33,15 @@ def obtener(id_venta):
         with conexion.cursor() as cursor:
             cursor.execute("""
                 SELECT v.id_venta, TO_CHAR(v.fecha, 'DD/MM/YYYY HH24:MI'),
-                       c.nombre, c.correo, u.usuario, v.id_apertura, v.id_cotizacion, v.total
+                    c.nombre, c.correo, u.usuario, v.id_apertura, v.id_cotizacion, v.total,
+                    v.estado, TO_CHAR(v.fecha_anulacion, 'DD/MM/YYYY HH24:MI'),
+                    ua.usuario, v.motivo_anulacion,
+                    c.direccion, c.telefono, a.estado
                 FROM VENTAS v
-                JOIN CLIENTES c ON v.id_cliente = c.id_cliente
-                JOIN USUARIO u  ON v.id_usuario = u.id_usuario
+                JOIN CLIENTES c      ON v.id_cliente = c.id_cliente
+                JOIN USUARIO u       ON v.id_usuario = u.id_usuario
+                JOIN APERTURA_CAJA a ON v.id_apertura = a.id_apertura
+                LEFT JOIN USUARIO ua ON v.id_usuario_anula = ua.id_usuario
                 WHERE v.id_venta = :id_venta
             """, {"id_venta": id_venta})
             fila = cursor.fetchone()
@@ -48,7 +54,14 @@ def obtener(id_venta):
                     "usuario": fila[4],
                     "id_apertura": fila[5],
                     "id_cotizacion": fila[6],
-                    "total": fila[7]
+                    "total": fila[7],
+                    "estado": fila[8],
+                    "fecha_anulacion": fila[9],
+                    "anulado_por": fila[10],
+                    "motivo_anulacion": fila[11],
+                    "direccion": fila[12],
+                    "telefono": fila[13],
+                    "caja_abierta": fila[14] == "A"
                 }
     return venta
 
@@ -162,3 +175,9 @@ def obtener_pagos(id_venta):
                     "cambio": cambio
                 })
     return pagos
+
+def anular(id_venta, id_usuario, motivo):
+    """SP_ANULAR_VENTA devuelve el stock, registra el Kardex y ajusta la caja (con COMMIT propio)."""
+    with obtener_conexion() as conexion:
+        with conexion.cursor() as cursor:
+            cursor.callproc("SP_ANULAR_VENTA", [id_venta, id_usuario, motivo])

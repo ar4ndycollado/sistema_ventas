@@ -11,7 +11,7 @@ SECRET_KEY = "clave_secreta_sistema_ventas"
 # Datos que aparecen en el recibo
 NEGOCIO = {
     "nombre": "Eden Store",
-    "direccion": "6a. Avenida 10-25, Zona 1, Guatemala",
-    "telefono": "2222-3333",
-    "nit": "1234567-8"
+    "direccion": "16 calle, 4-63 zona 4 Santa Cruz del Quiche",
+    "telefono": "59560379",
+    "nit": "11228369-1"
 }

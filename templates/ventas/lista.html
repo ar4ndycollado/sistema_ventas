@@ -20,23 +20,29 @@
                 <th>Cliente</th>
                 <th>Usuario</th>
                 <th class="texto-derecha">Total</th>
+                <th>Estado</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
             {% for venta in ventas %}
-            <tr>
+            <tr class="{{ 'fila-inactiva' if venta.estado == 'N' }}">
                 <td>{{ venta.id_venta }}</td>
                 <td>{{ venta.fecha }}</td>
                 <td>{{ venta.cliente }}</td>
                 <td>{{ venta.usuario }}</td>
                 <td class="texto-derecha">Q {{ '%.2f' | format(venta.total) }}</td>
+                <td>
+                    {% if venta.estado == 'A' %}
+                        <span class="etiqueta etiqueta-verde">Activa</span>
+                    {% else %}
+                        <span class="etiqueta etiqueta-roja">Anulada</span>
+                    {% endif %}
+                </td>
                 <td><a href="{{ url_for('ventas.detalle', id_venta=venta.id_venta) }}" class="boton-chico">Ver detalle</a></td>
             </tr>
             {% else %}
-            <tr>
-                <td colspan="6" class="vacio">No hay ventas registradas.</td>
-            </tr>
+            <tr><td colspan="7" class="vacio">No hay ventas registradas.</td></tr>
             {% endfor %}
         </tbody>
     </table>

@@ -517,4 +517,12 @@ h1 { font-size: 24px; margin-bottom: 8px; }
 .texto-ok        { color: var(--exito); }
 .texto-pendiente { color: #a16207; }
 
+/* ===== Botón rojo para acciones destructivas ===== */
+.boton-peligro-lleno {
+    background: var(--error);
+    color: var(--blanco);
+}
+
+.boton-peligro-lleno:hover { background: #b91c1c; }
+
 /* =====

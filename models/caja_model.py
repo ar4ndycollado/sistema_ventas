@@ -32,7 +32,7 @@ def obtener_apertura_activa(id_usuario):
 
 
 def resumen_apertura(id_apertura):
-    """Datos completos de una apertura, con cantidad y total de ventas."""
+    """Datos de una apertura: ventas activas, efectivo, anuladas, cierre y vale."""
     resumen = None
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -42,8 +42,13 @@ def resumen_apertura(id_apertura):
                     TO_CHAR(a.fecha_cierre, 'DD/MM/YYYY HH24:MI'),
                     a.monto_inicial, a.monto_esperado, a.monto_contado,
                     a.diferencia, a.estado,
-                    (SELECT COUNT(*) FROM VENTAS v WHERE v.id_apertura = a.id_apertura),
-                    (SELECT NVL(SUM(v.total), 0) FROM VENTAS v WHERE v.id_apertura = a.id_apertura),
+                    (SELECT COUNT(*) FROM VENTAS v
+                    WHERE v.id_apertura = a.id_apertura AND v.estado = 'A'),
+                    (SELECT NVL(SUM(v.total), 0) FROM VENTAS v
+                    WHERE v.id_apertura = a.id_apertura AND v.estado = 'A'),
+                    FN_EFECTIVO_APERTURA(a.id_apertura),
+                    (SELECT COUNT(*) FROM VENTAS v
+                    WHERE v.id_apertura = a.id_apertura AND v.estado = 'N'),
                     a.observacion_cierre,
                     (SELECT vd.id_vale FROM VALE_DESCUENTO vd WHERE vd.id_apertura = a.id_apertura)
                 FROM APERTURA_CAJA a
@@ -67,8 +72,10 @@ def resumen_apertura(id_apertura):
                     "estado": fila[10],
                     "cantidad_ventas": fila[11],
                     "total_ventas": fila[12],
-                    "observacion": fila[13],
-                    "id_vale": fila[14]
+                    "efectivo": fila[13],
+                    "anuladas": fila[14],
+                    "observacion": fila[15],
+                    "id_vale": fila[16]
                 }
     return resumen
 
@@ -78,7 +85,7 @@ def ventas_de_apertura(id_apertura):
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
             cursor.execute("""
-                SELECT v.id_venta, TO_CHAR(v.fecha, 'DD/MM/YYYY HH24:MI'), c.nombre, v.total
+                SELECT v.id_venta, TO_CHAR(v.fecha, 'DD/MM/YYYY HH24:MI'), c.nombre, v.total, v.estado
                 FROM VENTAS v
                 JOIN CLIENTES c ON v.id_cliente = c.id_cliente
                 WHERE v.id_apertura = :id_apertura
@@ -89,7 +96,8 @@ def ventas_de_apertura(id_apertura):
                     "id_venta": fila[0],
                     "fecha": fila[1],
                     "cliente": fila[2],
-                    "total": fila[3]
+                    "total": fila[3],
+                    "estado": fila[4]
                 })
     return ventas
 
@@ -336,3 +344,27 @@ def anular_vale(id_vale, motivo):
             anulado = cursor.rowcount == 1
         conexion.commit()
     return anulado
+
+def listar_anulaciones(mes):
+    """Ventas anuladas en el mes indicado, desde la vista VW_ANULACIONES_VENTA."""
+    anulaciones = []
+    with obtener_conexion() as conexion:
+        with conexion.cursor() as cursor:
+            cursor.execute("""
+                SELECT id_venta, TO_CHAR(fecha_anulacion, 'DD/MM/YYYY HH24:MI'),
+                    vendedor, anulado_por, cliente, total, motivo_anulacion
+                FROM VW_ANULACIONES_VENTA
+                WHERE TO_CHAR(fecha_anulacion, 'YYYY-MM') = :mes
+                ORDER BY fecha_anulacion DESC
+            """, {"mes": mes})
+            for fila in cursor.fetchall():
+                anulaciones.append({
+                    "id_venta": fila[0],
+                    "fecha": fila[1],
+                    "vendedor": fila[2],
+                    "anulado_por": fila[3],
+                    "cliente": fila[4],
+                    "total": fila[5],
+                    "motivo": fila[6]
+                })
+    return anulaciones

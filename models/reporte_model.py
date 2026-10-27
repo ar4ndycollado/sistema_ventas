@@ -5,15 +5,16 @@ from models.conexion import obtener_conexion
 
 
 def indicadores_ventas():
-    """Funciones de agregación sobre todas las ventas."""
+    """Agregación condicional: indicadores de las ventas ACTIVAS y conteo de anuladas."""
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
             cursor.execute("""
-                SELECT COUNT(id_venta),
-                    NVL(SUM(total), 0),
-                    NVL(AVG(total), 0),
-                    NVL(MAX(total), 0),
-                    NVL(MIN(total), 0)
+                SELECT COUNT(CASE WHEN estado = 'A' THEN 1 END),
+                    NVL(SUM(CASE WHEN estado = 'A' THEN total END), 0),
+                    NVL(AVG(CASE WHEN estado = 'A' THEN total END), 0),
+                    NVL(MAX(CASE WHEN estado = 'A' THEN total END), 0),
+                    NVL(MIN(CASE WHEN estado = 'A' THEN total END), 0),
+                    COUNT(CASE WHEN estado = 'N' THEN 1 END)
                 FROM VENTAS
             """)
             fila = cursor.fetchone()
@@ -22,7 +23,8 @@ def indicadores_ventas():
                 "total": fila[1],
                 "promedio": fila[2],
                 "maxima": fila[3],
-                "minima": fila[4]
+                "minima": fila[4],
+                "anuladas": fila[5]
             }
 
 
@@ -58,6 +60,7 @@ def ventas_por_cliente(monto_minimo):
                     MAX(v.fecha)
                 FROM CLIENTES c
                 JOIN VENTAS v ON c.id_cliente = v.id_cliente
+                WHERE v.estado = 'A'
                 GROUP BY c.id_cliente, c.nombre
                 HAVING SUM(v.total) >= :monto_minimo
                 ORDER BY SUM(v.total) DESC
@@ -70,6 +73,7 @@ def ventas_por_cliente(monto_minimo):
                     "ultima_compra": fila[3].strftime("%d/%m/%Y")
                 })
     return clientes
+
 
 
 def productos_mas_vendidos():
@@ -93,14 +97,17 @@ def productos_mas_vendidos():
 
 
 def productos_sin_ventas():
-    """Subconsulta: productos que nunca aparecen en DETALLE_VENTA."""
+    """Subconsulta: productos que no aparecen en ninguna venta ACTIVA."""
     productos = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
             cursor.execute("""
                 SELECT id_producto, nombre, stock, estado
                 FROM PRODUCTOS
-                WHERE id_producto NOT IN (SELECT DISTINCT id_producto FROM DETALLE_VENTA)
+                WHERE id_producto NOT IN (SELECT d.id_producto
+                                            FROM DETALLE_VENTA d
+                                            JOIN VENTAS v ON d.id_venta = v.id_venta
+                                        WHERE v.estado = 'A')
                 ORDER BY nombre
             """)
             for fila in cursor.fetchall():
@@ -114,7 +121,6 @@ def productos_sin_ventas():
 
 
 def ventas_por_usuario():
-    """GROUP BY por usuario: cantidad, total y promedio de sus ventas."""
     usuarios = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -125,6 +131,7 @@ def ventas_por_usuario():
                     AVG(v.total)
                 FROM USUARIO u
                 JOIN VENTAS v ON u.id_usuario = v.id_usuario
+                WHERE v.estado = 'A'
                 GROUP BY u.usuario
                 ORDER BY SUM(v.total) DESC
             """)
@@ -139,7 +146,6 @@ def ventas_por_usuario():
 
 
 def ventas_por_mes():
-    """GROUP BY por mes (funciones de fecha TO_CHAR)."""
     meses = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -148,6 +154,7 @@ def ventas_por_mes():
                     COUNT(id_venta),
                     SUM(total)
                 FROM VENTAS
+                WHERE estado = 'A'
                 GROUP BY TO_CHAR(fecha, 'YYYY-MM')
                 ORDER BY mes
             """)
@@ -158,3 +165,27 @@ def ventas_por_mes():
                     "total": fila[2]
                 })
     return meses
+
+def ventas_por_metodo():
+    """Cuánto se cobró con cada método de pago (solo ventas activas)."""
+    metodos = []
+    with obtener_conexion() as conexion:
+        with conexion.cursor() as cursor:
+            cursor.execute("""
+                SELECT m.nombre,
+                    COUNT(p.id_pago),
+                    SUM(p.monto)
+                FROM PAGO_VENTA p
+                JOIN METODO_PAGO m ON p.id_metodo = m.id_metodo
+                JOIN VENTAS v      ON p.id_venta = v.id_venta
+                WHERE v.estado = 'A'
+                GROUP BY m.nombre
+                ORDER BY SUM(p.monto) DESC
+            """)
+            for fila in cursor.fetchall():
+                metodos.append({
+                    "metodo": fila[0],
+                    "pagos": fila[1],
+                    "total": fila[2]
+                })
+    return metodos

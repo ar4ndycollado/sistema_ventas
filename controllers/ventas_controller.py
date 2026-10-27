@@ -5,6 +5,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 import oracledb
 from models import venta_model, producto_model, cliente_model, caja_model
 from models.errores import obtener_mensaje_error
+import config
+from controllers.seguridad import tiene_rol
 
 ventas_bp = Blueprint("ventas", __name__, url_prefix="/ventas")
 
@@ -106,7 +108,7 @@ def agregar():
 
     if cantidad_total > producto["stock"]:
         flash("Stock insuficiente de " + producto["nombre"] + ". Disponible: " +
-              str(producto["stock"]) + ", solicitado: " + str(cantidad_total) + ".", "error")
+            str(producto["stock"]) + ", solicitado: " + str(cantidad_total) + ".", "error")
         return redirect(url_for("ventas.nueva"))
 
     precio = producto["precio_venta"]
@@ -271,4 +273,45 @@ def detalle(id_venta):
         venta=venta,
         lineas=venta_model.obtener_detalle(id_venta),
         pagos=venta_model.obtener_pagos(id_venta)
+    )
+
+# ===== Anulación y recibo =====
+
+# Roles que pueden anular ventas
+ROLES_ANULACION = ["ADMINISTRADOR", "CAJERO"]
+
+
+@ventas_bp.route("/anular/<int:id_venta>", methods=["POST"])
+def anular(id_venta):
+    if not tiene_rol(ROLES_ANULACION):
+        flash("Su rol no puede anular ventas.", "error")
+        return redirect(url_for("ventas.detalle", id_venta=id_venta))
+
+    motivo = request.form.get("motivo", "").strip()
+    if len(motivo) < 5:
+        flash("Indique el motivo de la anulación (mínimo 5 caracteres).", "error")
+        return redirect(url_for("ventas.detalle", id_venta=id_venta))
+
+    try:
+        venta_model.anular(id_venta, session["id_usuario"], motivo)
+        flash("Venta #" + str(id_venta) + " anulada. Se devolvió el stock y se ajustó la caja.", "exito")
+    except oracledb.DatabaseError as e:
+        flash("No se pudo anular: " + obtener_mensaje_error(e), "error")
+
+    return redirect(url_for("ventas.detalle", id_venta=id_venta))
+
+
+@ventas_bp.route("/recibo/<int:id_venta>")
+def recibo(id_venta):
+    venta = venta_model.obtener(id_venta)
+    if venta is None:
+        flash("La venta no existe.", "error")
+        return redirect(url_for("ventas.lista"))
+
+    return render_template(
+        "ventas/recibo.html",
+        venta=venta,
+        lineas=venta_model.obtener_detalle(id_venta),
+        pagos=venta_model.obtener_pagos(id_venta),
+        negocio=config.NEGOCIO
     )

@@ -192,8 +192,10 @@ def incidencias():
         mes=mes,
         incidencias=caja_model.listar_incidencias(mes),
         resumen=caja_model.resumen_incidencias(mes),
+        anulaciones=caja_model.listar_anulaciones(mes),
         umbral=FALTANTES_PARA_REVISION
     )
+
 
 
 @caja_bp.route("/vales")

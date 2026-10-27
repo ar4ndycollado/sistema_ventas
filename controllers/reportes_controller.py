@@ -35,6 +35,9 @@ def inicio():
     por_mes = reporte_model.ventas_por_mes()
     agregar_porcentajes(por_mes, "total")
 
+    por_metodo = reporte_model.ventas_por_metodo()
+    agregar_porcentajes(por_metodo, "total")
+
     return render_template(
         "reportes/inicio.html",
         indicadores=reporte_model.indicadores_ventas(),
@@ -44,5 +47,6 @@ def inicio():
         mas_vendidos=mas_vendidos,
         sin_ventas=reporte_model.productos_sin_ventas(),
         por_usuario=reporte_model.ventas_por_usuario(),
-        por_mes=por_mes
+        por_mes=por_mes,
+        por_metodo=por_metodo
     )

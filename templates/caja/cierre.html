@@ -27,7 +27,11 @@
         <strong>Q {{ '%.2f' | format(resumen.total_ventas) }}</strong>
     </div>
     <div class="indicador">
-        <span>Monto esperado</span>
+        <span>Cobrado en efectivo</span>
+        <strong>Q {{ '%.2f' | format(resumen.efectivo) }}</strong>
+    </div>
+    <div class="indicador">
+        <span>Efectivo esperado</span>
         <strong>Q {{ '%.2f' | format(resumen.monto_esperado) }}</strong>
     </div>
     <div class="indicador">
@@ -46,23 +50,25 @@
         {% endif %}
     </div>
 </div>
+
+{% if resumen.anuladas > 0 %}
+<p class="nota">Esta apertura tuvo {{ resumen.anuladas }} venta(s) anulada(s); no se sumaron al efectivo esperado.</p>
 {% endif %}
 
-{% if resumen.estado == 'C' %}
-    {% if resumen.observacion %}
-    <div class="tarjeta">
-        <p><strong>Observación del cierre:</strong> {{ resumen.observacion }}</p>
-    </div>
-    {% endif %}
+{% if resumen.observacion %}
+<div class="tarjeta">
+    <p><strong>Observación del cierre:</strong> {{ resumen.observacion }}</p>
+</div>
+{% endif %}
 
-    {% if resumen.id_vale %}
-    <div class="aviso aviso-alerta">
-        Se generó automáticamente el <strong>vale #{{ resumen.id_vale }}</strong>
-        por Q {{ '%.2f' | format(-resumen.diferencia) }} debido al faltante.
-    </div>
-    {% elif resumen.diferencia > 0 %}
-    <div class="aviso aviso-ok">El sobrante quedó registrado como incidencia.</div>
-    {% endif %}
+{% if resumen.id_vale %}
+<div class="aviso aviso-alerta">
+    Se generó automáticamente el <strong>vale #{{ resumen.id_vale }}</strong>
+    por Q {{ '%.2f' | format(-resumen.diferencia) }} debido al faltante.
+</div>
+{% elif resumen.diferencia > 0 %}
+<div class="aviso aviso-ok">El sobrante quedó registrado como incidencia.</div>
+{% endif %}
 {% endif %}
 
 <div class="tarjeta">
@@ -78,16 +84,17 @@
         </thead>
         <tbody>
             {% for venta in ventas %}
-            <tr>
-                <td><a href="{{ url_for('ventas.detalle', id_venta=venta.id_venta) }}">#{{ venta.id_venta }}</a></td>
+            <tr class="{{ 'fila-inactiva' if venta.estado == 'N' }}">
+                <td>
+                    <a href="{{ url_for('ventas.detalle', id_venta=venta.id_venta) }}">#{{ venta.id_venta }}</a>
+                    {% if venta.estado == 'N' %}<span class="etiqueta etiqueta-roja">Anulada</span>{% endif %}
+                </td>
                 <td>{{ venta.fecha }}</td>
                 <td>{{ venta.cliente }}</td>
                 <td class="texto-derecha">Q {{ '%.2f' | format(venta.total) }}</td>
             </tr>
             {% else %}
-            <tr>
-                <td colspan="4" class="vacio">No hubo ventas en esta apertura.</td>
-            </tr>
+            <tr><td colspan="4" class="vacio">No hubo ventas en esta apertura.</td></tr>
             {% endfor %}
         </tbody>
     </table>

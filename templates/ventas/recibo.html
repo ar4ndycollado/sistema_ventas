@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo #{{ venta.id_venta }}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: #1f2937;
+            background: #f5f6f8;
+            padding: 24px 16px;
+        }
+        .recibo {
+            position: relative;
+            max-width: 480px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 28px;
+            overflow: hidden;
+        }
+        .centro { text-align: center; }
+        .negocio { font-size: 22px; font-weight: 700; }
+        .dato { font-size: 13px; color: #6b7280; }
+        .titulo {
+            margin: 18px 0 4px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        hr { border: none; border-top: 1px dashed #d1d5db; margin: 14px 0; }
+        .fila { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { text-align: left; font-size: 12px; color: #6b7280; padding-bottom: 6px; }
+        td { padding: 4px 0; vertical-align: top; }
+        .derecha { text-align: right; }
+        .total { font-size: 18px; font-weight: 700; }
+        .pie { margin-top: 16px; font-size: 12px; color: #6b7280; }
+
+        /* Sello de ANULADA */
+        .sello {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-25deg);
+            font-size: 64px;
+            font-weight: 800;
+            color: rgba(220, 38, 38, 0.18);
+            border: 6px solid rgba(220, 38, 38, 0.18);
+            border-radius: 12px;
+            padding: 4px 24px;
+            pointer-events: none;
+        }
+
+        .acciones { max-width: 480px; margin: 16px auto 0; display: flex; gap: 8px; }
+        .boton {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            background: #ffffff;
+            color: #1f2937;
+            text-align: center;
+            text-decoration: none;
+        }
+        .boton-principal { background: #2563eb; border-color: #2563eb; color: #ffffff; }
+
+        /* Al imprimir: sin fondo, sin bordes y sin botones */
+        @media print {
+            body { background: #ffffff; padding: 0; }
+            .recibo { border: none; border-radius: 0; max-width: 100%; }
+            .acciones { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="recibo">
+        {% if venta.estado == 'N' %}<div class="sello">ANULADA</div>{% endif %}
+
+        <div class="centro">
+            <p class="negocio">{{ negocio.nombre }}</p>
+            <p class="dato">{{ negocio.direccion }}</p>
+            <p class="dato">Tel. {{ negocio.telefono }} · NIT {{ negocio.nit }}</p>
+            <p class="titulo">COMPROBANTE DE VENTA</p>
+            <p class="dato">No. {{ '%06d' | format(venta.id_venta) }}</p>
+        </div>
+
+        <hr>
+
+        <div class="fila"><span>Fecha:</span><span>{{ venta.fecha }}</span></div>
+        <div class="fila"><span>Cliente:</span><span>{{ venta.cliente }}</span></div>
+        <div class="fila"><span>Dirección:</span><span>{{ venta.direccion }}</span></div>
+        <div class="fila"><span>Atendió:</span><span>{{ venta.usuario }}</span></div>
+
+        <hr>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Cant.</th>
+                    <th>Descripción</th>
+                    <th class="derecha">P. unit.</th>
+                    <th class="derecha">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for linea in lineas %}
+                <tr>
+                    <td>{{ linea.cantidad }}</td>
+                    <td>{{ linea.nombre }}</td>
+                    <td class="derecha">{{ '%.2f' | format(linea.precio_venta) }}</td>
+                    <td class="derecha">{{ '%.2f' | format(linea.subtotal) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <hr>
+
+        <div class="fila total"><span>TOTAL</span><span>Q {{ '%.2f' | format(venta.total) }}</span></div>
+
+        <hr>
+
+        {% for pago in pagos %}
+        <div class="fila">
+            <span>{{ pago.metodo }}{% if pago.referencia %} ({{ pago.referencia }}){% endif %}</span>
+            <span>Q {{ '%.2f' | format(pago.monto) }}</span>
+        </div>
+        {% if pago.monto_recibido %}
+        <div class="fila dato"><span>&nbsp;&nbsp;Recibido</span><span>Q {{ '%.2f' | format(pago.monto_recibido) }}</span></div>
+        <div class="fila dato"><span>&nbsp;&nbsp;Cambio</span><span>Q {{ '%.2f' | format(pago.cambio) }}</span></div>
+        {% endif %}
+        {% endfor %}
+
+        {% if venta.estado == 'N' %}
+        <hr>
+        <p class="dato">Anulada el {{ venta.fecha_anulacion }} por {{ venta.anulado_por }}. Motivo: {{ venta.motivo_anulacion }}</p>
+        {% endif %}
+
+        <div class="centro pie">
+            <p>¡Gracias por su compra!</p>
+            <p>Este comprobante no es una factura.</p>
+        </div>
+    </div>
+
+    <div class="acciones">
+        <button class="boton boton-principal" onclick="window.print()">Imprimir / Guardar PDF</button>
+        <a class="boton" href="{{ url_for('ventas.detalle', id_venta=venta.id_venta) }}">Volver</a>
+    </div>
+</body>
+</html>
