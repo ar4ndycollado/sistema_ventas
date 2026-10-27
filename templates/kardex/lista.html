@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block titulo %}Kardex{% endblock %}
+
+{% block contenido %}
+<h1>Kardex</h1>
+<p class="subtitulo">Historial de entradas (compras) y salidas (ventas) de inventario</p>
+
+<!-- Indicadores generales -->
+<div class="indicadores">
+    <div class="indicador">
+        <span>Entradas registradas</span>
+        <strong>{{ resumen['ENTRADA'].movimientos }}</strong>
+        <span>{{ resumen['ENTRADA'].unidades }} unidades</span>
+    </div>
+    <div class="indicador">
+        <span>Salidas registradas</span>
+        <strong>{{ resumen['SALIDA'].movimientos }}</strong>
+        <span>{{ resumen['SALIDA'].unidades }} unidades</span>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="tarjeta">
+    <form method="GET" class="formulario formulario-linea">
+        <div class="campo-ancho">
+            <label for="id_producto">Producto</label>
+            <select id="id_producto" name="id_producto">
+                <option value="">Todos los productos</option>
+                {% for producto in productos %}
+                <option value="{{ producto.id_producto }}" {{ 'selected' if producto.id_producto == id_producto }}>
+                    {{ producto.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="tipo">Tipo de movimiento</label>
+            <select id="tipo" name="tipo">
+                <option value="">Todos</option>
+                <option value="ENTRADA" {{ 'selected' if tipo == 'ENTRADA' }}>Entradas</option>
+                <option value="SALIDA" {{ 'selected' if tipo == 'SALIDA' }}>Salidas</option>
+            </select>
+        </div>
+        <div class="botones-form">
+            <button type="submit" class="boton boton-principal">Filtrar</button>
+            <a href="{{ url_for('kardex.lista') }}" class="boton boton-secundario">Limpiar</a>
+        </div>
+    </form>
+</div>
+
+<!-- Resumen del producto seleccionado -->
+{% if resumen_producto %}
+<div class="indicadores" style="margin-top: 16px;">
+    <div class="indicador">
+        <span>Producto</span>
+        <strong style="font-size: 16px;">{{ resumen_producto.nombre }}</strong>
+    </div>
+    <div class="indicador">
+        <span>Total entradas</span>
+        <strong>{{ resumen_producto.entradas }}</strong>
+    </div>
+    <div class="indicador">
+        <span>Total salidas</span>
+        <strong>{{ resumen_producto.salidas }}</strong>
+    </div>
+    <div class="indicador">
+        <span>Stock actual</span>
+        <strong>{{ resumen_producto.stock }}</strong>
+    </div>
+</div>
+{% endif %}
+
+<!-- Movimientos -->
+<div class="tarjeta" {% if not resumen_producto %}style="margin-top: 16px;"{% endif %}>
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Producto</th>
+                <th>Tipo</th>
+                <th>Documento</th>
+                <th>Referencia</th>
+                <th class="texto-derecha">Entrada</th>
+                <th class="texto-derecha">Salida</th>
+                <th class="texto-derecha">Existencia</th>
+                <th>Usuario</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for movimiento in movimientos %}
+            <tr>
+                <td>{{ movimiento.fecha }}</td>
+                <td>{{ movimiento.producto }}</td>
+                <td>
+                    {% if movimiento.tipo == 'ENTRADA' %}
+                        <span class="etiqueta etiqueta-verde">Entrada</span>
+                    {% else %}
+                        <span class="etiqueta etiqueta-roja">Salida</span>
+                    {% endif %}
+                </td>
+                <td>{{ movimiento.documento }}</td>
+                <td>{{ movimiento.referencia }}</td>
+                <td class="texto-derecha">{{ movimiento.entrada if movimiento.entrada else '' }}</td>
+                <td class="texto-derecha">{{ movimiento.salida if movimiento.salida else '' }}</td>
+                <td class="texto-derecha"><strong>{{ movimiento.existencia }}</strong></td>
+                <td>{{ movimiento.usuario or '—' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" class="vacio">No hay movimientos con esos filtros.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

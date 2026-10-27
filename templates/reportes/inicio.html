@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block titulo %}Reportes{% endblock %}
+
+{% block contenido %}
+<h1>Reportes</h1>
+<p class="subtitulo">Información obtenida directamente desde la base de datos Oracle</p>
+
+<!-- 1. Indicadores de ventas -->
+<div class="seccion-reporte">
+    <h3>Resumen de ventas <span class="tecnica">COUNT · SUM · AVG · MAX · MIN</span></h3>
+    <div class="indicadores">
+        <div class="indicador"><span>Ventas</span><strong>{{ indicadores.cantidad }}</strong></div>
+        <div class="indicador"><span>Total vendido</span><strong>Q {{ '%.2f' | format(indicadores.total) }}</strong></div>
+        <div class="indicador"><span>Promedio por venta</span><strong>Q {{ '%.2f' | format(indicadores.promedio) }}</strong></div>
+        <div class="indicador"><span>Venta más alta</span><strong>Q {{ '%.2f' | format(indicadores.maxima) }}</strong></div>
+        <div class="indicador"><span>Venta más baja</span><strong>Q {{ '%.2f' | format(indicadores.minima) }}</strong></div>
+    </div>
+</div>
+
+<!-- 2. Inventario -->
+<div class="seccion-reporte">
+    <h3>Valor del inventario <span class="tecnica">SUM · expresiones</span></h3>
+    <div class="indicadores">
+        <div class="indicador"><span>Productos activos</span><strong>{{ inventario.productos }}</strong></div>
+        <div class="indicador"><span>Unidades en bodega</span><strong>{{ inventario.unidades }}</strong></div>
+        <div class="indicador"><span>Valor al costo</span><strong>Q {{ '%.2f' | format(inventario.valor_costo) }}</strong></div>
+        <div class="indicador"><span>Valor a precio de venta</span><strong>Q {{ '%.2f' | format(inventario.valor_venta) }}</strong></div>
+    </div>
+</div>
+
+<!-- 3. Ventas por cliente con HAVING -->
+<div class="seccion-reporte">
+    <h3>Mejores clientes <span class="tecnica">JOIN · GROUP BY · HAVING</span></h3>
+    <div class="tarjeta">
+        <form method="GET" class="formulario formulario-linea">
+            <div>
+                <label for="monto_minimo">Total comprado mínimo (Q)</label>
+                <input type="number" id="monto_minimo" name="monto_minimo" min="0" step="0.01" value="{{ monto_minimo }}">
+            </div>
+            <div>
+                <button type="submit" class="boton boton-principal">Aplicar</button>
+            </div>
+        </form>
+
+        <table class="tabla">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th class="texto-derecha">Compras</th>
+                    <th class="texto-derecha">Total comprado</th>
+                    <th>Última compra</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fila in por_cliente %}
+                <tr>
+                    <td>{{ fila.cliente }}</td>
+                    <td class="texto-derecha">{{ fila.compras }}</td>
+                    <td class="texto-derecha">Q {{ '%.2f' | format(fila.total) }}</td>
+                    <td>{{ fila.ultima_compra }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="vacio">Ningún cliente supera ese monto.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="rejilla-2">
+    <!-- 4. Productos más vendidos (vista) -->
+    <div class="seccion-reporte">
+        <h3>Top 5 productos más vendidos <span class="tecnica">VISTA</span></h3>
+        <div class="tarjeta">
+            {% for producto in mas_vendidos %}
+            <div class="fila-barra">
+                <div class="fila-barra-texto">
+                    <span>{{ producto.nombre }}</span>
+                    <strong>{{ producto.unidades }} u.</strong>
+                </div>
+                <div class="barra"><div class="barra-relleno" style="width: {{ producto.porcentaje }}%;"></div></div>
+            </div>
+            {% else %}
+            <p class="vacio">Aún no hay ventas.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 5. Ventas por mes -->
+    <div class="seccion-reporte">
+        <h3>Ventas por mes <span class="tecnica">GROUP BY · TO_CHAR</span></h3>
+        <div class="tarjeta">
+            {% for mes in por_mes %}
+            <div class="fila-barra">
+                <div class="fila-barra-texto">
+                    <span>{{ mes.mes }} ({{ mes.ventas }} ventas)</span>
+                    <strong>Q {{ '%.2f' | format(mes.total) }}</strong>
+                </div>
+                <div class="barra"><div class="barra-relleno" style="width: {{ mes.porcentaje }}%;"></div></div>
+            </div>
+            {% else %}
+            <p class="vacio">Aún no hay ventas.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="rejilla-2">
+    <!-- 6. Ventas por usuario -->
+    <div class="seccion-reporte">
+        <h3>Ventas por usuario <span class="tecnica">JOIN · GROUP BY · AVG</span></h3>
+        <div class="tarjeta">
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th class="texto-derecha">Ventas</th>
+                        <th class="texto-derecha">Total</th>
+                        <th class="texto-derecha">Promedio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fila in por_usuario %}
+                    <tr>
+                        <td>{{ fila.usuario }}</td>
+                        <td class="texto-derecha">{{ fila.ventas }}</td>
+                        <td class="texto-derecha">Q {{ '%.2f' | format(fila.total) }}</td>
+                        <td class="texto-derecha">Q {{ '%.2f' | format(fila.promedio) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="vacio">Aún no hay ventas.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 7. Productos sin ventas (subconsulta) -->
+    <div class="seccion-reporte">
+        <h3>Productos nunca vendidos <span class="tecnica">SUBCONSULTA · NOT IN</span></h3>
+        <div class="tarjeta">
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Producto</th>
+                        <th class="texto-derecha">Stock</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in sin_ventas %}
+                    <tr>
+                        <td>{{ producto.id_producto }}</td>
+                        <td>{{ producto.nombre }}</td>
+                        <td class="texto-derecha">{{ producto.stock }}</td>
+                        <td>{{ 'Activo' if producto.estado == 'A' else 'Inactivo' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="vacio">Todos los productos tienen ventas.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

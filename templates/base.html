@@ -24,8 +24,8 @@
             {% if tiene_permiso('ventas') %}<a href="{{ url_for('ventas.lista') }}">Ventas</a>{% endif %}
             {% if tiene_permiso('cotizaciones') %}<a href="{{ url_for('cotizaciones.lista') }}">Cotizaciones</a>{% endif %}
             {% if tiene_permiso('caja') %}<a href="{{ url_for('caja.mi_caja') }}">Caja</a>{% endif %}
-            {% if tiene_permiso('kardex') %}<a href="#">Kardex</a>{% endif %}
-            {% if tiene_permiso('reportes') %}<a href="#">Reportes</a>{% endif %}
+            {% if tiene_permiso('kardex') %}<a href="{{ url_for('kardex.lista') }}">Kardex</a>{% endif %}
+            {% if tiene_permiso('reportes') %}<a href="{{ url_for('reportes.inicio') }}">Reportes</a>{% endif %}
             {% if tiene_permiso('usuarios') %}<a href="#">Usuarios</a>{% endif %}
         </nav>
 

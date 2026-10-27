@@ -403,4 +403,59 @@ h1 { font-size: 24px; margin-bottom: 8px; }
     margin-bottom: 0;
 }
 
+/* ===== Reportes ===== */
+.seccion-reporte { margin-bottom: 24px; }
+
+.seccion-reporte h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Etiqueta con la técnica SQL usada */
+.tecnica {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: var(--texto-suave);
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    padding: 2px 8px;
+}
+
+/* Dos columnas que se apilan en pantallas pequeñas */
+.rejilla-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 16px;
+}
+
+/* Barras horizontales */
+.fila-barra { margin-bottom: 14px; }
+.fila-barra:last-child { margin-bottom: 0; }
+
+.fila-barra-texto {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.barra {
+    background: var(--fondo);
+    border-radius: 6px;
+    height: 10px;
+    overflow: hidden;
+}
+
+.barra-relleno {
+    background: var(--principal);
+    height: 100%;
+    border-radius: 6px;
+}
+
 /* =====
