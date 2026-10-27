@@ -483,4 +483,34 @@ h1 { font-size: 24px; margin-bottom: 8px; }
     margin-bottom: 0;
 }
 
+/* ===== Áreas de texto y campos pequeños ===== */
+.formulario textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    margin-bottom: 16px;
+    resize: vertical;
+}
+
+.formulario textarea:focus {
+    outline: none;
+    border-color: var(--principal);
+}
+
+.campo-chico {
+    padding: 6px 8px;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    font-size: 13px;
+    width: 140px;
+}
+
+.texto-suave {
+    color: var(--texto-suave);
+    font-size: 13px;
+}
+
 /* =====

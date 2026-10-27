@@ -2,6 +2,8 @@
     <a href="{{ url_for('caja.mi_caja') }}" class="{{ 'activo' if pestana == 'mi_caja' }}">Mi caja</a>
     <a href="{{ url_for('caja.historial') }}" class="{{ 'activo' if pestana == 'historial' }}">Historial</a>
     {% if tiene_rol(['ADMINISTRADOR']) %}
+    <a href="{{ url_for('caja.incidencias') }}" class="{{ 'activo' if pestana == 'incidencias' }}">Incidencias</a>
+    <a href="{{ url_for('caja.vales') }}" class="{{ 'activo' if pestana == 'vales' }}">Vales</a>
     <a href="{{ url_for('caja.cajas') }}" class="{{ 'activo' if pestana == 'cajas' }}">Cajas</a>
     {% endif %}
 </div>

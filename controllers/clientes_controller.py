@@ -28,7 +28,13 @@ def validar(cliente):
         errores.append("El teléfono solo debe contener números.")
     if cliente["correo"] != "" and "@" not in cliente["correo"]:
         errores.append("El correo no tiene un formato válido.")
+    if cliente["direccion"] == "":        # en proveedores: proveedor["direccion"]
+        errores.append("La dirección es obligatoria.")
+    if cliente["telefono"] == "":         # en proveedores: proveedor["telefono"]
+        errores.append("El teléfono es obligatorio.")
     return errores
+    
+    
 
 
 @clientes_bp.route("/")

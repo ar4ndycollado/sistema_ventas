@@ -14,10 +14,10 @@
         <label for="nit">NIT <span class="obligatorio">*</span></label>
         <input type="text" id="nit" name="nit" value="{{ proveedor.nit or '' }}" maxlength="20">
 
-        <label for="direccion">Dirección</label>
+        <label for="direccion">Dirección<span class="obligatorio">*</span></label>
         <input type="text" id="direccion" name="direccion" value="{{ proveedor.direccion or '' }}" maxlength="150">
 
-        <label for="telefono">Teléfono</label>
+        <label for="telefono">Teléfono<span class="obligatorio">*</span></label>
         <input type="text" id="telefono" name="telefono" value="{{ proveedor.telefono or '' }}" maxlength="15">
 
         <div class="botones-form">

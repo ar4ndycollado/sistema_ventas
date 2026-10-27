@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block titulo %}Incidencias de caja{% endblock %}
+
+{% block contenido %}
+<h1>Incidencias de caja</h1>
+<p class="subtitulo">Faltantes y sobrantes en los cierres · Vista VW_INCIDENCIAS_CAJA</p>
+
+{% set pestana = 'incidencias' %}
+{% include "caja/_pestanas.html" %}
+
+<div class="tarjeta">
+    <form method="GET" class="formulario formulario-linea">
+        <div>
+            <label for="mes">Mes</label>
+            <input type="month" id="mes" name="mes" value="{{ mes }}">
+        </div>
+        <div>
+            <button type="submit" class="boton boton-principal">Ver</button>
+        </div>
+    </form>
+</div>
+
+<!-- Resumen por usuario -->
+<div class="tarjeta">
+    <h3 class="titulo-tarjeta">Resumen por usuario <span class="tecnica">GROUP BY · CASE</span></h3>
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th class="texto-derecha">Faltantes</th>
+                <th class="texto-derecha">Monto faltante</th>
+                <th class="texto-derecha">Sobrantes</th>
+                <th class="texto-derecha">Monto sobrante</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fila in resumen %}
+            <tr>
+                <td>{{ fila.usuario }}</td>
+                <td class="texto-derecha">{{ fila.faltantes }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(fila.monto_faltantes) }}</td>
+                <td class="texto-derecha">{{ fila.sobrantes }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(fila.monto_sobrantes) }}</td>
+                <td>
+                    {% if fila.faltantes >= umbral %}
+                        <span class="etiqueta etiqueta-roja">Revisar</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="vacio">Sin incidencias en este mes.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p class="nota" style="margin-top: 12px; margin-bottom: 0;">
+        Se marca para revisión a quien tenga {{ umbral }} o más faltantes en el mes.
+    </p>
+</div>
+
+<!-- Detalle -->
+<div class="tarjeta">
+    <h3 class="titulo-tarjeta">Detalle</h3>
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Fecha de cierre</th>
+                <th>Usuario</th>
+                <th>Caja</th>
+                <th>Tipo</th>
+                <th class="texto-derecha">Monto</th>
+                <th>Observación</th>
+                <th>Vale</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for incidencia in incidencias %}
+            <tr>
+                <td><a href="{{ url_for('caja.cierre', id_apertura=incidencia.id_apertura) }}">{{ incidencia.fecha }}</a></td>
+                <td>{{ incidencia.usuario }}</td>
+                <td>{{ incidencia.caja }}</td>
+                <td>
+                    {% if incidencia.tipo == 'FALTANTE' %}
+                        <span class="etiqueta etiqueta-roja">Faltante</span>
+                    {% else %}
+                        <span class="etiqueta etiqueta-amarilla">Sobrante</span>
+                    {% endif %}
+                </td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(incidencia.monto) }}</td>
+                <td>{{ incidencia.observacion or '—' }}</td>
+                <td>
+                    {% if incidencia.id_vale %}
+                        #{{ incidencia.id_vale }}
+                        ({{ {'P': 'Pendiente', 'A': 'Aplicado', 'N': 'Anulado'}[incidencia.estado_vale] }})
+                    {% else %}—{% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="vacio">Sin incidencias en este mes.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

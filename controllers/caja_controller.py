@@ -6,6 +6,7 @@ import oracledb
 from models import caja_model
 from models.errores import obtener_mensaje_error
 from controllers.seguridad import tiene_rol
+from datetime import datetime
 
 caja_bp = Blueprint("caja", __name__, url_prefix="/caja")
 
@@ -59,7 +60,6 @@ def abrir():
 
 @caja_bp.route("/cerrar", methods=["POST"])
 def cerrar():
-    # La apertura se busca por el usuario conectado, no se toma del formulario
     apertura = caja_model.obtener_apertura_activa(session["id_usuario"])
     if apertura is None:
         flash("No tiene una caja abierta.", "error")
@@ -70,8 +70,12 @@ def cerrar():
         flash("Ingrese un monto contado válido (cero o mayor).", "error")
         return redirect(url_for("caja.mi_caja"))
 
+    observacion = request.form.get("observacion", "").strip()
+    if observacion == "":
+        observacion = None
+
     try:
-        caja_model.cerrar(apertura["id_apertura"], session["id_usuario"], monto_contado)
+        caja_model.cerrar(apertura["id_apertura"], session["id_usuario"], monto_contado, observacion)
         flash("Caja cerrada correctamente.", "exito")
         return redirect(url_for("caja.cierre", id_apertura=apertura["id_apertura"]))
     except oracledb.DatabaseError as e:
@@ -161,3 +165,90 @@ def estado_caja(id_caja):
         flash(obtener_mensaje_error(e), "error")
 
     return redirect(url_for("caja.cajas"))
+
+# ===== Incidencias y vales (solo ADMINISTRADOR) =====
+
+# Cantidad de faltantes en un mes a partir de la cual se sugiere revisar al usuario
+FALTANTES_PARA_REVISION = 3
+
+
+def mes_seleccionado():
+    """Mes de la URL (?mes=2026-10) o el mes actual."""
+    mes = request.args.get("mes", "")
+    if len(mes) != 7:
+        mes = datetime.now().strftime("%Y-%m")
+    return mes
+
+
+@caja_bp.route("/incidencias")
+def incidencias():
+    if not tiene_rol(["ADMINISTRADOR"]):
+        flash("Solo el administrador puede ver las incidencias.", "error")
+        return redirect(url_for("caja.mi_caja"))
+
+    mes = mes_seleccionado()
+    return render_template(
+        "caja/incidencias.html",
+        mes=mes,
+        incidencias=caja_model.listar_incidencias(mes),
+        resumen=caja_model.resumen_incidencias(mes),
+        umbral=FALTANTES_PARA_REVISION
+    )
+
+
+@caja_bp.route("/vales")
+def vales():
+    if not tiene_rol(["ADMINISTRADOR"]):
+        flash("Solo el administrador puede gestionar los vales.", "error")
+        return redirect(url_for("caja.mi_caja"))
+
+    estado = request.args.get("estado", "P")
+    if estado not in ["P", "A", "N"]:
+        estado = None   # todos
+
+    return render_template(
+        "caja/vales.html",
+        vales=caja_model.listar_vales(estado),
+        pendientes=caja_model.pendientes_por_usuario(),
+        estado=estado,
+        mes_actual=datetime.now().strftime("%Y-%m")
+    )
+
+
+@caja_bp.route("/vales/aplicar", methods=["POST"])
+def aplicar_vales():
+    if not tiene_rol(["ADMINISTRADOR"]):
+        return redirect(url_for("caja.mi_caja"))
+
+    mes = request.form.get("mes", "")
+    try:
+        cantidad = caja_model.aplicar_vales_mes(mes)
+        if cantidad == 0:
+            flash("No hay vales pendientes en " + mes + ".", "error")
+        else:
+            flash(str(cantidad) + " vale(s) de " + mes + " aplicados como descuento.", "exito")
+    except oracledb.DatabaseError as e:
+        flash(obtener_mensaje_error(e), "error")
+
+    return redirect(url_for("caja.vales"))
+
+
+@caja_bp.route("/vales/anular/<int:id_vale>", methods=["POST"])
+def anular_vale(id_vale):
+    if not tiene_rol(["ADMINISTRADOR"]):
+        return redirect(url_for("caja.mi_caja"))
+
+    motivo = request.form.get("motivo", "").strip()
+    if motivo == "":
+        flash("Indique el motivo de la anulación.", "error")
+        return redirect(url_for("caja.vales"))
+
+    try:
+        if caja_model.anular_vale(id_vale, motivo):
+            flash("Vale #" + str(id_vale) + " anulado.", "exito")
+        else:
+            flash("Solo se pueden anular vales pendientes.", "error")
+    except oracledb.DatabaseError as e:
+        flash(obtener_mensaje_error(e), "error")
+
+    return redirect(url_for("caja.vales"))

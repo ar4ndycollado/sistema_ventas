@@ -48,6 +48,23 @@
 </div>
 {% endif %}
 
+{% if resumen.estado == 'C' %}
+    {% if resumen.observacion %}
+    <div class="tarjeta">
+        <p><strong>Observación del cierre:</strong> {{ resumen.observacion }}</p>
+    </div>
+    {% endif %}
+
+    {% if resumen.id_vale %}
+    <div class="aviso aviso-alerta">
+        Se generó automáticamente el <strong>vale #{{ resumen.id_vale }}</strong>
+        por Q {{ '%.2f' | format(-resumen.diferencia) }} debido al faltante.
+    </div>
+    {% elif resumen.diferencia > 0 %}
+    <div class="aviso aviso-ok">El sobrante quedó registrado como incidencia.</div>
+    {% endif %}
+{% endif %}
+
 <div class="tarjeta">
     <h3 class="titulo-tarjeta">Ventas de esta apertura</h3>
     <table class="tabla">

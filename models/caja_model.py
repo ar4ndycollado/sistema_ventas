@@ -43,7 +43,9 @@ def resumen_apertura(id_apertura):
                     a.monto_inicial, a.monto_esperado, a.monto_contado,
                     a.diferencia, a.estado,
                     (SELECT COUNT(*) FROM VENTAS v WHERE v.id_apertura = a.id_apertura),
-                    (SELECT NVL(SUM(v.total), 0) FROM VENTAS v WHERE v.id_apertura = a.id_apertura)
+                    (SELECT NVL(SUM(v.total), 0) FROM VENTAS v WHERE v.id_apertura = a.id_apertura),
+                    a.observacion_cierre,
+                    (SELECT vd.id_vale FROM VALE_DESCUENTO vd WHERE vd.id_apertura = a.id_apertura)
                 FROM APERTURA_CAJA a
                 JOIN CAJA c    ON a.id_caja = c.id_caja
                 JOIN USUARIO u ON a.id_usuario = u.id_usuario
@@ -64,7 +66,9 @@ def resumen_apertura(id_apertura):
                     "diferencia": fila[9],
                     "estado": fila[10],
                     "cantidad_ventas": fila[11],
-                    "total_ventas": fila[12]
+                    "total_ventas": fila[12],
+                    "observacion": fila[13],
+                    "id_vale": fila[14]
                 }
     return resumen
 
@@ -116,10 +120,10 @@ def abrir(id_caja, id_usuario, monto_inicial):
             return id_apertura_var.getvalue()
 
 
-def cerrar(id_apertura, id_usuario, monto_contado):
+def cerrar(id_apertura, id_usuario, monto_contado, observacion):
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
-            cursor.callproc("SP_CERRAR_CAJA", [id_apertura, id_usuario, monto_contado])
+            cursor.callproc("SP_CERRAR_CAJA", [id_apertura, id_usuario, monto_contado, observacion])
 
 
 def historial(id_usuario=None):
@@ -197,3 +201,138 @@ def cambiar_estado_caja(id_caja, nuevo_estado):
                         {"estado": nuevo_estado, "id_caja": id_caja})
         conexion.commit()
 
+# ===== Incidencias (faltantes y sobrantes) =====
+
+def listar_incidencias(mes):
+    """Incidencias del mes indicado ('YYYY-MM'), desde la vista VW_INCIDENCIAS_CAJA."""
+    incidencias = []
+    with obtener_conexion() as conexion:
+        with conexion.cursor() as cursor:
+            cursor.execute("""
+                SELECT id_apertura, usuario, caja,
+                    TO_CHAR(fecha_cierre, 'DD/MM/YYYY HH24:MI'),
+                    tipo, monto, observacion_cierre, id_vale, estado_vale
+                FROM VW_INCIDENCIAS_CAJA
+                WHERE TO_CHAR(fecha_cierre, 'YYYY-MM') = :mes
+                ORDER BY fecha_cierre DESC
+            """, {"mes": mes})
+            for fila in cursor.fetchall():
+                incidencias.append({
+                    "id_apertura": fila[0],
+                    "usuario": fila[1],
+                    "caja": fila[2],
+                    "fecha": fila[3],
+                    "tipo": fila[4],
+                    "monto": fila[5],
+                    "observacion": fila[6],
+                    "id_vale": fila[7],
+                    "estado_vale": fila[8]
+                })
+    return incidencias
+
+
+def resumen_incidencias(mes):
+    """Por usuario: cantidad y monto de faltantes y sobrantes del mes (GROUP BY)."""
+    resumen = []
+    with obtener_conexion() as conexion:
+        with conexion.cursor() as cursor:
+            cursor.execute("""
+                SELECT usuario,
+                    COUNT(CASE WHEN tipo = 'FALTANTE' THEN 1 END),
+                    NVL(SUM(CASE WHEN tipo = 'FALTANTE' THEN monto END), 0),
+                    COUNT(CASE WHEN tipo = 'SOBRANTE' THEN 1 END),
+                    NVL(SUM(CASE WHEN tipo = 'SOBRANTE' THEN monto END), 0)
+                FROM VW_INCIDENCIAS_CAJA
+                WHERE TO_CHAR(fecha_cierre, 'YYYY-MM') = :mes
+                GROUP BY usuario
+                ORDER BY 2 DESC, 3 DESC
+            """, {"mes": mes})
+            for fila in cursor.fetchall():
+                resumen.append({
+                    "usuario": fila[0],
+                    "faltantes": fila[1],
+                    "monto_faltantes": fila[2],
+                    "sobrantes": fila[3],
+                    "monto_sobrantes": fila[4]
+                })
+    return resumen
+
+
+# ===== Vales de descuento =====
+
+def listar_vales(estado=None):
+    vales = []
+    with obtener_conexion() as conexion:
+        with conexion.cursor() as cursor:
+            cursor.execute("""
+                SELECT v.id_vale, u.usuario, c.nombre, v.id_apertura, v.monto, v.estado,
+                    TO_CHAR(v.fecha_emision, 'DD/MM/YYYY'),
+                    TO_CHAR(v.fecha_aplicacion, 'DD/MM/YYYY'),
+                    v.motivo_anulacion
+                FROM VALE_DESCUENTO v
+                JOIN APERTURA_CAJA a ON v.id_apertura = a.id_apertura
+                JOIN USUARIO u       ON a.id_usuario = u.id_usuario
+                JOIN CAJA c          ON a.id_caja = c.id_caja
+                WHERE (:estado IS NULL OR v.estado = :estado)
+                ORDER BY v.id_vale DESC
+            """, {"estado": estado})
+            for fila in cursor.fetchall():
+                vales.append({
+                    "id_vale": fila[0],
+                    "usuario": fila[1],
+                    "caja": fila[2],
+                    "id_apertura": fila[3],
+                    "monto": fila[4],
+                    "estado": fila[5],
+                    "fecha_emision": fila[6],
+                    "fecha_aplicacion": fila[7],
+                    "motivo_anulacion": fila[8]
+                })
+    return vales
+
+
+def pendientes_por_usuario():
+    """Total de vales pendientes por usuario: lo que se descontará a fin de mes."""
+    pendientes = []
+    with obtener_conexion() as conexion:
+        with conexion.cursor() as cursor:
+            cursor.execute("""
+                SELECT u.usuario, COUNT(v.id_vale), SUM(v.monto)
+                FROM VALE_DESCUENTO v
+                JOIN APERTURA_CAJA a ON v.id_apertura = a.id_apertura
+                JOIN USUARIO u       ON a.id_usuario = u.id_usuario
+                WHERE v.estado = 'P'
+                GROUP BY u.usuario
+                ORDER BY SUM(v.monto) DESC
+            """)
+            for fila in cursor.fetchall():
+                pendientes.append({
+                    "usuario": fila[0],
+                    "vales": fila[1],
+                    "total": fila[2]
+                })
+    return pendientes
+
+
+def aplicar_vales_mes(mes):
+    with obtener_conexion() as conexion:
+        with conexion.cursor() as cursor:
+            cantidad_var = cursor.var(int)
+            cursor.callproc("SP_APLICAR_VALES_MES", [mes, cantidad_var])
+            return cantidad_var.getvalue()
+
+
+def anular_vale(id_vale, motivo):
+    """Anula un vale pendiente. Devuelve True si se anuló."""
+    with obtener_conexion() as conexion:
+        with conexion.cursor() as cursor:
+            cursor.execute("""
+                UPDATE VALE_DESCUENTO
+                SET estado = 'N',
+                    motivo_anulacion = :motivo
+            WHERE id_vale = :id_vale
+            AND estado = 'P'
+            """, {"motivo": motivo, "id_vale": id_vale})
+            anulado = cursor.rowcount == 1
+        conexion.commit()
+    return anulado

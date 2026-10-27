@@ -28,6 +28,10 @@ def validar(proveedor):
         errores.append("El NIT es obligatorio.")
     if proveedor["telefono"] != "" and not proveedor["telefono"].isdigit():
         errores.append("El teléfono solo debe contener números.")
+    if proveedor["direccion"] == "":        # en proveedores: proveedor["direccion"]
+        errores.append("La dirección es obligatoria.")
+    if proveedor["telefono"] == "":         # en proveedores: proveedor["telefono"]
+        errores.append("El teléfono es obligatorio.")
     return errores
 
 

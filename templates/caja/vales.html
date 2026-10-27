@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block titulo %}Vales de descuento{% endblock %}
+
+{% block contenido %}
+<h1>Vales de descuento</h1>
+<p class="subtitulo">Generados automáticamente por el trigger TRG_VALE_FALTANTE al cerrar una caja con faltante</p>
+
+{% set pestana = 'vales' %}
+{% include "caja/_pestanas.html" %}
+
+<div class="rejilla-2">
+    <!-- Pendientes por usuario -->
+    <div class="tarjeta">
+        <h3 class="titulo-tarjeta">Pendientes de descontar <span class="tecnica">JOIN · GROUP BY · SUM</span></h3>
+        <table class="tabla">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th class="texto-derecha">Vales</th>
+                    <th class="texto-derecha">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fila in pendientes %}
+                <tr>
+                    <td>{{ fila.usuario }}</td>
+                    <td class="texto-derecha">{{ fila.vales }}</td>
+                    <td class="texto-derecha">Q {{ '%.2f' | format(fila.total) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="vacio">No hay vales pendientes.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Cierre de mes -->
+    <div class="tarjeta">
+        <h3 class="titulo-tarjeta">Cierre de mes <span class="tecnica">SP_APLICAR_VALES_MES</span></h3>
+        <form method="POST" action="{{ url_for('caja.aplicar_vales') }}" class="formulario"
+              onsubmit="return confirm('¿Aplicar como descuento todos los vales pendientes de ese mes?');">
+            <label for="mes">Mes a aplicar</label>
+            <input type="month" id="mes" name="mes" value="{{ mes_actual }}">
+            <p class="nota">Marca como <strong>Aplicados</strong> todos los vales pendientes emitidos en el mes elegido.</p>
+            <button type="submit" class="boton boton-principal">Aplicar vales del mes</button>
+        </form>
+    </div>
+</div>
+
+<div class="filtros" style="margin-top: 16px;">
+    <a href="{{ url_for('caja.vales', estado='P') }}" class="{{ 'activo' if estado == 'P' }}">Pendientes</a>
+    <a href="{{ url_for('caja.vales', estado='A') }}" class="{{ 'activo' if estado == 'A' }}">Aplicados</a>
+    <a href="{{ url_for('caja.vales', estado='N') }}" class="{{ 'activo' if estado == 'N' }}">Anulados</a>
+    <a href="{{ url_for('caja.vales', estado='T') }}" class="{{ 'activo' if estado is none }}">Todos</a>
+</div>
+
+<div class="tarjeta">
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Vale</th>
+                <th>Usuario</th>
+                <th>Caja / Apertura</th>
+                <th class="texto-derecha">Monto</th>
+                <th>Emitido</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vale in vales %}
+            <tr>
+                <td>#{{ vale.id_vale }}</td>
+                <td>{{ vale.usuario }}</td>
+                <td>
+                    {{ vale.caja }} ·
+                    <a href="{{ url_for('caja.cierre', id_apertura=vale.id_apertura) }}">#{{ vale.id_apertura }}</a>
+                </td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(vale.monto) }}</td>
+                <td>{{ vale.fecha_emision }}</td>
+                <td>
+                    {% if vale.estado == 'P' %}
+                        <span class="etiqueta etiqueta-amarilla">Pendiente</span>
+                    {% elif vale.estado == 'A' %}
+                        <span class="etiqueta etiqueta-verde">Aplicado {{ vale.fecha_aplicacion }}</span>
+                    {% else %}
+                        <span class="etiqueta etiqueta-gris" title="{{ vale.motivo_anulacion }}">Anulado</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if vale.estado == 'P' %}
+                    <form method="POST" action="{{ url_for('caja.anular_vale', id_vale=vale.id_vale) }}" class="acciones">
+                        <input type="text" name="motivo" placeholder="Motivo" class="campo-chico" maxlength="200">
+                        <button type="submit" class="boton-chico boton-peligro">Anular</button>
+                    </form>
+                    {% elif vale.estado == 'N' %}
+                        <span class="texto-suave">{{ vale.motivo_anulacion }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="vacio">No hay vales en esta lista.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
