@@ -1,7 +1,7 @@
 # config.py
 # Datos de conexión a la base de datos Oracle
 
-DB_USUARIO = "labprueba"
+DB_USUARIO = "sistema_ventas"
 DB_PASSWORD = "12345"
 DB_DSN = "localhost:1521/xepdb1"
 
