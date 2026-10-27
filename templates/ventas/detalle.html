@@ -19,8 +19,8 @@
 
 {% if venta.estado == 'N' %}
 <div class="aviso aviso-alerta">
-    Anulada el <strong>{{ venta.fecha_anulacion }}</strong> por <strong>{{ venta.anulado_por }}</strong>.
-    Motivo: {{ venta.motivo_anulacion }}
+    Anulada el <strong>{{ venta.fecha_anulacion }}</strong> por <strong>{{ venta.anulado_por }}</strong>,
+    autorizada por <strong>{{ venta.autorizado_por }}</strong>. Motivo: {{ venta.motivo_anulacion }}
 </div>
 {% endif %}
 
@@ -87,8 +87,8 @@
     </table>
 </div>
 
-<!-- Anulación -->
-{% if venta.estado == 'A' and tiene_rol(['ADMINISTRADOR', 'CAJERO']) %}
+<!-- Anulación (requiere autorización de un administrador) -->
+{% if venta.estado == 'A' %}
 <div class="tarjeta tarjeta-formulario">
     <h3 class="titulo-tarjeta">Anular venta</h3>
     {% if venta.caja_abierta %}
@@ -97,6 +97,21 @@
         <label for="motivo">Motivo de la anulación</label>
         <textarea id="motivo" name="motivo" rows="2" maxlength="200"
                 placeholder="Ejemplo: error en la cantidad registrada"></textarea>
+
+        {% if not tiene_rol(['ADMINISTRADOR']) %}
+        <p class="nota">Esta operación requiere la autorización de un administrador. Pídale que ingrese sus credenciales.</p>
+        <div class="fila-campos">
+            <div>
+                <label for="autoriza_usuario">Usuario administrador</label>
+                <input type="text" id="autoriza_usuario" name="autoriza_usuario" autocomplete="off">
+            </div>
+            <div>
+                <label for="autoriza_password">Contraseña</label>
+                <input type="password" id="autoriza_password" name="autoriza_password" autocomplete="new-password">
+            </div>
+        </div>
+        {% endif %}
+
         <button type="submit" class="boton boton-peligro-lleno">Anular venta</button>
     </form>
     {% else %}

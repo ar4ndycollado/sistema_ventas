@@ -352,7 +352,7 @@ def listar_anulaciones(mes):
         with conexion.cursor() as cursor:
             cursor.execute("""
                 SELECT id_venta, TO_CHAR(fecha_anulacion, 'DD/MM/YYYY HH24:MI'),
-                    vendedor, anulado_por, cliente, total, motivo_anulacion
+                    vendedor, anulado_por, autorizado_por, cliente, total, motivo_anulacion
                 FROM VW_ANULACIONES_VENTA
                 WHERE TO_CHAR(fecha_anulacion, 'YYYY-MM') = :mes
                 ORDER BY fecha_anulacion DESC
@@ -363,9 +363,10 @@ def listar_anulaciones(mes):
                     "fecha": fila[1],
                     "vendedor": fila[2],
                     "anulado_por": fila[3],
-                    "cliente": fila[4],
-                    "total": fila[5],
-                    "motivo": fila[6]
+                    "autorizado_por": fila[4],
+                    "cliente": fila[5],
+                    "total": fila[6],
+                    "motivo": fila[7]
                 })
     return anulaciones
 

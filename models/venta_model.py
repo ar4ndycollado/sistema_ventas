@@ -36,12 +36,14 @@ def obtener(id_venta):
                     c.nombre, c.correo, u.usuario, v.id_apertura, v.id_cotizacion, v.total,
                     v.estado, TO_CHAR(v.fecha_anulacion, 'DD/MM/YYYY HH24:MI'),
                     ua.usuario, v.motivo_anulacion,
-                    c.direccion, c.telefono, a.estado
+                    c.direccion, c.telefono, a.estado,
+                    uz.usuario
                 FROM VENTAS v
                 JOIN CLIENTES c      ON v.id_cliente = c.id_cliente
                 JOIN USUARIO u       ON v.id_usuario = u.id_usuario
                 JOIN APERTURA_CAJA a ON v.id_apertura = a.id_apertura
                 LEFT JOIN USUARIO ua ON v.id_usuario_anula = ua.id_usuario
+                LEFT JOIN USUARIO uz ON v.id_usuario_autoriza = uz.id_usuario
                 WHERE v.id_venta = :id_venta
             """, {"id_venta": id_venta})
             fila = cursor.fetchone()
@@ -61,7 +63,8 @@ def obtener(id_venta):
                     "motivo_anulacion": fila[11],
                     "direccion": fila[12],
                     "telefono": fila[13],
-                    "caja_abierta": fila[14] == "A"
+                    "caja_abierta": fila[14] == "A",
+                    "autorizado_por": fila[15]
                 }
     return venta
 
@@ -176,8 +179,8 @@ def obtener_pagos(id_venta):
                 })
     return pagos
 
-def anular(id_venta, id_usuario, motivo):
-    """SP_ANULAR_VENTA devuelve el stock, registra el Kardex y ajusta la caja (con COMMIT propio)."""
+def anular(id_venta, id_usuario, id_autoriza, motivo):
+    """SP_ANULAR_VENTA valida que quien autoriza sea ADMINISTRADOR, devuelve el stock y ajusta la caja."""
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
-            cursor.callproc("SP_ANULAR_VENTA", [id_venta, id_usuario, motivo])
+            cursor.callproc("SP_ANULAR_VENTA", [id_venta, id_usuario, id_autoriza, motivo])

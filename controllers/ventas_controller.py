@@ -7,6 +7,8 @@ from models import venta_model, producto_model, cliente_model, caja_model
 from models.errores import obtener_mensaje_error
 import config
 from controllers.seguridad import tiene_rol
+from werkzeug.security import check_password_hash
+from models import usuario_model
 
 ventas_bp = Blueprint("ventas", __name__, url_prefix="/ventas")
 
@@ -277,23 +279,50 @@ def detalle(id_venta):
 
 # ===== Anulación y recibo =====
 
-# Roles que pueden anular ventas
-ROLES_ANULACION = ["ADMINISTRADOR", "CAJERO"]
+# ===== Anulación con autorización de administrador =====
+
+def validar_autorizador():
+    """Si el usuario conectado es ADMINISTRADOR, se autoriza a sí mismo.
+    Si no, verifica el usuario y la contraseña del administrador escritos en el formulario.
+    Devuelve el id del autorizador, o None si la autorización no es válida."""
+
+    if tiene_rol(["ADMINISTRADOR"]):
+        return session["id_usuario"]
+
+    nombre = request.form.get("autoriza_usuario", "").strip()
+    password = request.form.get("autoriza_password", "")
+
+    if nombre == "" or password == "":
+        return None
+
+    autorizador = usuario_model.buscar_usuario(nombre)
+    if autorizador is None or autorizador["estado"] != "A":
+        return None
+
+    if not check_password_hash(autorizador["password"], password):
+        return None
+
+    if "ADMINISTRADOR" not in usuario_model.obtener_roles(autorizador["id_usuario"]):
+        return None
+
+    return autorizador["id_usuario"]
 
 
 @ventas_bp.route("/anular/<int:id_venta>", methods=["POST"])
 def anular(id_venta):
-    if not tiene_rol(ROLES_ANULACION):
-        flash("Su rol no puede anular ventas.", "error")
-        return redirect(url_for("ventas.detalle", id_venta=id_venta))
-
     motivo = request.form.get("motivo", "").strip()
     if len(motivo) < 5:
         flash("Indique el motivo de la anulación (mínimo 5 caracteres).", "error")
         return redirect(url_for("ventas.detalle", id_venta=id_venta))
 
+    id_autoriza = validar_autorizador()
+    if id_autoriza is None:
+        # Mensaje genérico: no revela si falló el usuario, la contraseña o el rol
+        flash("Autorización rechazada: credenciales de administrador no válidas.", "error")
+        return redirect(url_for("ventas.detalle", id_venta=id_venta))
+
     try:
-        venta_model.anular(id_venta, session["id_usuario"], motivo)
+        venta_model.anular(id_venta, session["id_usuario"], id_autoriza, motivo)
         flash("Venta #" + str(id_venta) + " anulada. Se devolvió el stock y se ajustó la caja.", "exito")
     except oracledb.DatabaseError as e:
         flash("No se pudo anular: " + obtener_mensaje_error(e), "error")

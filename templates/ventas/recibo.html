@@ -139,7 +139,7 @@
 
         {% if venta.estado == 'N' %}
         <hr>
-        <p class="dato">Anulada el {{ venta.fecha_anulacion }} por {{ venta.anulado_por }}. Motivo: {{ venta.motivo_anulacion }}</p>
+        <p class="dato">Anulada el {{ venta.fecha_anulacion }} por {{ venta.anulado_por }}, autorizada por {{ venta.autorizado_por }}. Motivo: {{ venta.motivo_anulacion }}</p>
         {% endif %}
 
         <div class="centro pie">

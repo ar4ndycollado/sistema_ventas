@@ -150,6 +150,7 @@
                 <th>Anulada</th>
                 <th>Vendió</th>
                 <th>Anuló</th>
+                <th>Autorizó</th>
                 <th>Cliente</th>
                 <th class="texto-derecha">Total</th>
                 <th>Motivo</th>
@@ -162,12 +163,13 @@
                 <td>{{ anulacion.fecha }}</td>
                 <td>{{ anulacion.vendedor }}</td>
                 <td>{{ anulacion.anulado_por }}</td>
+                <td>{{ anulacion.autorizado_por }}</td>
                 <td>{{ anulacion.cliente }}</td>
                 <td class="texto-derecha">Q {{ '%.2f' | format(anulacion.total) }}</td>
                 <td>{{ anulacion.motivo }}</td>
             </tr>
             {% else %}
-            <tr><td colspan="7" class="vacio">Sin anulaciones en este mes.</td></tr>
+            <tr><td colspan="8" class="vacio">Sin anulaciones en este mes.</td></tr>
             {% endfor %}
         </tbody>
     </table>
