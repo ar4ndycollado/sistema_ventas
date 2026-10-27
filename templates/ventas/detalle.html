@@ -48,4 +48,31 @@
     </table>
     <p class="total">Total: Q {{ '%.2f' | format(venta.total) }}</p>
 </div>
+<div class="tarjeta">
+    <h3 class="titulo-tarjeta">Pagos</h3>
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Método</th>
+                <th>Referencia</th>
+                <th class="texto-derecha">Monto</th>
+                <th class="texto-derecha">Recibido</th>
+                <th class="texto-derecha">Cambio</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pago in pagos %}
+            <tr>
+                <td>{{ pago.metodo }}</td>
+                <td>{{ pago.referencia or '—' }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(pago.monto) }}</td>
+                <td class="texto-derecha">{% if pago.monto_recibido %}Q {{ '%.2f' | format(pago.monto_recibido) }}{% else %}—{% endif %}</td>
+                <td class="texto-derecha">{% if pago.cambio is not none %}Q {{ '%.2f' | format(pago.cambio) }}{% else %}—{% endif %}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="vacio">Sin pagos registrados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

@@ -3,7 +3,7 @@
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import oracledb
-from models import cotizacion_model, venta_model, producto_model, cliente_model
+from models import cotizacion_model, producto_model, cliente_model
 from models.errores import obtener_mensaje_error
 from controllers.seguridad import tiene_permiso
 
@@ -151,8 +151,7 @@ def convertir(id_cotizacion):
     if not tiene_permiso("ventas"):
         flash("Su rol no puede registrar ventas.", "error")
         return redirect(url_for("cotizaciones.detalle", id_cotizacion=id_cotizacion))
-
-    # Por si venció desde que se abrió la página
+    
     cotizacion_model.caducar_vencidas()
 
     cotizacion = cotizacion_model.obtener(id_cotizacion)
@@ -160,20 +159,30 @@ def convertir(id_cotizacion):
         flash("La cotización no existe.", "error")
         return redirect(url_for("cotizaciones.lista"))
 
-    # Pasar el detalle de la cotización al formato que usa la venta
-    lineas_venta = []
+    if cotizacion["estado"] != "A":
+        flash("Solo se pueden convertir cotizaciones abiertas.", "error")
+        return redirect(url_for("cotizaciones.detalle", id_cotizacion=id_cotizacion))
+
+    # Cargar los productos de la cotización en el carrito de venta, con el precio vigente
+    carrito = []
     for linea in cotizacion_model.obtener_detalle(id_cotizacion):
-        lineas_venta.append({
+        producto = producto_model.obtener(linea["id_producto"])
+        precio = producto["precio_venta"]
+        carrito.append({
             "id_producto": linea["id_producto"],
-            "cantidad": linea["cantidad"]
+            "nombre": linea["nombre"],
+            "cantidad": linea["cantidad"],
+            "precio_venta": precio,
+            "subtotal": round(linea["cantidad"] * precio, 2)
         })
 
-    try:
-        # Misma transacción de ventas del Paso 7; SP_CREAR_VENTA marca la cotización como 'F'
-        id_venta = venta_model.registrar(cotizacion["id_cliente"], session["id_usuario"],
-                                        lineas_venta, id_cotizacion)
-        flash("Cotización #" + str(id_cotizacion) + " convertida en la venta #" + str(id_venta) + ".", "exito")
-        return redirect(url_for("ventas.detalle", id_venta=id_venta))
-    except oracledb.DatabaseError as e:
-        flash("No se pudo convertir en venta: " + obtener_mensaje_error(e), "error")
-        return redirect(url_for("cotizaciones.detalle", id_cotizacion=id_cotizacion))
+    session["carrito_venta"] = carrito
+    session["pagos_venta"] = []
+    session["cotizacion_venta"] = {
+        "id_cotizacion": id_cotizacion,
+        "id_cliente": cotizacion["id_cliente"],
+        "cliente": cotizacion["cliente"]
+    }
+
+    flash("Cotización #" + str(id_cotizacion) + " cargada. Registre los pagos para completar la venta.", "exito")
+    return redirect(url_for("ventas.nueva"))

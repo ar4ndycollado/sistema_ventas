@@ -69,8 +69,8 @@
 <div class="tarjeta">
     <form method="POST" action="{{ url_for('cotizaciones.convertir', id_cotizacion=cotizacion.id_cotizacion) }}"
         onsubmit="return confirm('¿Convertir esta cotización en venta? Se descontará el inventario.');">
-        <p class="nota">Al convertirla se validará la caja y el stock, y se usarán los precios vigentes del catálogo.</p>
-        <button type="submit" class="boton boton-principal">Convertir en venta</button>
+        <p class="nota">Los productos se cargarán en la pantalla de venta, donde se registrarán los pagos.</p>
+            <button type="submit" class="boton boton-principal">Convertir en venta</button>
     </form>
 </div>
 {% endif %}

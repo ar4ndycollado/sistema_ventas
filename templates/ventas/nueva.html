@@ -4,23 +4,28 @@
 
 {% block contenido %}
 <h1>Nueva venta</h1>
-<p class="subtitulo">1. Agregue los productos &nbsp;·&nbsp; 2. Seleccione el cliente &nbsp;·&nbsp; 3. Registre la venta</p>
+<p class="subtitulo">1. Agregue los productos &nbsp;·&nbsp; 2. Registre los pagos &nbsp;·&nbsp; 3. Registre la venta</p>
 
-<!-- Estado de la caja del usuario -->
+<!-- Estado de la caja -->
 {% if apertura %}
 <div class="aviso aviso-ok">
     Caja abierta: <strong>{{ apertura.caja }}</strong> (apertura #{{ apertura.id_apertura }} desde {{ apertura.fecha_apertura }})
-    &nbsp;·&nbsp; Monto esperado: Q {{ '%.2f' | format(apertura.monto_esperado) }}
 </div>
 {% else %}
-<div class="aviso aviso-alerta">
-    No tiene una caja abierta. La venta será rechazada hasta que abra una caja.
+<div class="aviso aviso-alerta">No tiene una caja abierta. La venta será rechazada hasta que abra una caja.</div>
+{% endif %}
+
+<!-- Venta generada desde una cotización -->
+{% if cotizacion %}
+<div class="aviso aviso-ok">
+    Venta a partir de la <strong>cotización #{{ cotizacion.id_cotizacion }}</strong> · Cliente: <strong>{{ cotizacion.cliente }}</strong>.
+    Se usan los precios vigentes del catálogo.
 </div>
 {% endif %}
 
-<!-- Paso 1: agregar productos -->
+<!-- 1. Productos -->
 <div class="tarjeta">
-    <h3 class="titulo-tarjeta">Agregar producto</h3>
+    <h3 class="titulo-tarjeta">1. Productos</h3>
     <form method="POST" action="{{ url_for('ventas.agregar') }}" class="formulario formulario-linea">
         <div class="campo-ancho">
             <label for="id_producto">Producto</label>
@@ -41,11 +46,7 @@
             <button type="submit" class="boton boton-principal">Agregar</button>
         </div>
     </form>
-</div>
 
-<!-- Carrito -->
-<div class="tarjeta">
-    <h3 class="titulo-tarjeta">Productos de la venta</h3>
     <table class="tabla">
         <thead>
             <tr>
@@ -70,26 +71,109 @@
                 </td>
             </tr>
             {% else %}
-            <tr>
-                <td colspan="5" class="vacio">Aún no ha agregado productos.</td>
-            </tr>
+            <tr><td colspan="5" class="vacio">Aún no ha agregado productos.</td></tr>
             {% endfor %}
         </tbody>
     </table>
-    <p class="total">Total: Q {{ '%.2f' | format(total) }}</p>
 </div>
 
-<!-- Paso 2 y 3: cliente y registrar -->
+<!-- 2. Pagos -->
 <div class="tarjeta">
+    <h3 class="titulo-tarjeta">2. Pagos</h3>
+
+    <div class="indicadores">
+        <div class="indicador"><span>Total</span><strong>Q {{ '%.2f' | format(total) }}</strong></div>
+        <div class="indicador"><span>Pagado</span><strong>Q {{ '%.2f' | format(pagado) }}</strong></div>
+        <div class="indicador">
+            <span>Pendiente</span>
+            <strong class="{{ 'texto-ok' if pendiente == 0 and total > 0 else 'texto-pendiente' }}">Q {{ '%.2f' | format(pendiente) }}</strong>
+        </div>
+    </div>
+
+    {% if pendiente < 0 %}
+    <div class="aviso aviso-alerta">Los pagos superan el total de la venta. Quite un pago.</div>
+    {% endif %}
+
+    {% if pendiente > 0 %}
+    <form method="POST" action="{{ url_for('ventas.agregar_pago') }}" class="formulario formulario-linea">
+        <div>
+            <label for="id_metodo">Método</label>
+            <select id="id_metodo" name="id_metodo">
+                {% for metodo in metodos %}
+                <option value="{{ metodo.id_metodo }}"
+                        data-efectivo="{{ 'si' if metodo.es_efectivo else 'no' }}"
+                        data-referencia="{{ 'si' if metodo.requiere_referencia else 'no' }}">
+                    {{ metodo.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="monto">Monto (Q)</label>
+            <input type="number" id="monto" name="monto" min="0.01" step="0.01" value="{{ '%.2f' | format(pendiente) }}">
+        </div>
+        <div id="campo-recibido">
+            <label for="monto_recibido">Efectivo recibido (opcional)</label>
+            <input type="number" id="monto_recibido" name="monto_recibido" min="0" step="0.01">
+        </div>
+        <div id="campo-referencia">
+            <label for="referencia">No. autorización / referencia</label>
+            <input type="text" id="referencia" name="referencia" maxlength="50">
+        </div>
+        <div>
+            <button type="submit" class="boton boton-principal">Agregar pago</button>
+        </div>
+    </form>
+    {% endif %}
+
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Método</th>
+                <th>Referencia</th>
+                <th class="texto-derecha">Monto</th>
+                <th class="texto-derecha">Recibido</th>
+                <th class="texto-derecha">Cambio</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pago in pagos %}
+            <tr>
+                <td>{{ pago.metodo }}</td>
+                <td>{{ pago.referencia or '—' }}</td>
+                <td class="texto-derecha">Q {{ '%.2f' | format(pago.monto) }}</td>
+                <td class="texto-derecha">{% if pago.monto_recibido %}Q {{ '%.2f' | format(pago.monto_recibido) }}{% else %}—{% endif %}</td>
+                <td class="texto-derecha">{% if pago.cambio is not none %}<strong>Q {{ '%.2f' | format(pago.cambio) }}</strong>{% else %}—{% endif %}</td>
+                <td class="acciones">
+                    <form method="POST" action="{{ url_for('ventas.quitar_pago', indice=loop.index0) }}">
+                        <button type="submit" class="boton-chico boton-peligro">Quitar</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="vacio">Aún no ha registrado pagos.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- 3. Cliente y registrar -->
+<div class="tarjeta">
+    <h3 class="titulo-tarjeta">3. Registrar</h3>
     <form method="POST" action="{{ url_for('ventas.registrar') }}" class="formulario formulario-linea">
         <div class="campo-ancho">
             <label for="id_cliente">Cliente</label>
-            <select id="id_cliente" name="id_cliente">
-                <option value="">-- Seleccione --</option>
-                {% for cliente in clientes %}
-                <option value="{{ cliente.id_cliente }}">{{ cliente.nombre }}</option>
-                {% endfor %}
-            </select>
+            {% if cotizacion %}
+                <input type="text" value="{{ cotizacion.cliente }}" disabled>
+            {% else %}
+                <select id="id_cliente" name="id_cliente">
+                    <option value="">-- Seleccione --</option>
+                    {% for cliente in clientes %}
+                    <option value="{{ cliente.id_cliente }}">{{ cliente.nombre }}</option>
+                    {% endfor %}
+                </select>
+            {% endif %}
         </div>
         <div>
             <button type="submit" class="boton boton-principal">Registrar venta</button>
@@ -97,8 +181,25 @@
     </form>
 
     <form method="POST" action="{{ url_for('ventas.cancelar') }}"
-        onsubmit="return confirm('¿Cancelar la venta y vaciar el carrito?');">
+        onsubmit="return confirm('¿Cancelar la venta? Se vaciarán los productos y pagos.');">
         <button type="submit" class="boton-chico boton-peligro">Cancelar venta</button>
     </form>
 </div>
+
+<script>
+    // Muestra "Efectivo recibido" solo para efectivo y "Referencia" solo cuando el método la requiere
+    function actualizarCamposPago() {
+        var selector = document.getElementById("id_metodo");
+        if (!selector) { return; }
+        var opcion = selector.options[selector.selectedIndex];
+        document.getElementById("campo-recibido").style.display = opcion.dataset.efectivo === "si" ? "" : "none";
+        document.getElementById("campo-referencia").style.display = opcion.dataset.referencia === "si" ? "" : "none";
+    }
+
+    var selectorMetodo = document.getElementById("id_metodo");
+    if (selectorMetodo) {
+        selectorMetodo.addEventListener("change", actualizarCamposPago);
+        actualizarCamposPago();
+    }
+</script>
 {% endblock %}

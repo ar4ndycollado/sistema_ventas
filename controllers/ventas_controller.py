@@ -1,5 +1,5 @@
 # controllers/ventas_controller.py
-# CONTROLADOR: ventas con varios productos (carrito)
+# CONTROLADOR: ventas con varios productos y varios métodos de pago
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import oracledb
@@ -9,18 +9,41 @@ from models.errores import obtener_mensaje_error
 ventas_bp = Blueprint("ventas", __name__, url_prefix="/ventas")
 
 
+# ===== Datos de la venta en curso (guardados en la sesión) =====
+
 def obtener_carrito():
     if "carrito_venta" not in session:
         session["carrito_venta"] = []
     return session["carrito_venta"]
 
 
+def obtener_pagos():
+    if "pagos_venta" not in session:
+        session["pagos_venta"] = []
+    return session["pagos_venta"]
+
+
 def calcular_total(carrito):
     total = 0
     for linea in carrito:
         total = total + linea["subtotal"]
-    return total
+    return round(total, 2)
 
+
+def calcular_pagado(pagos):
+    pagado = 0
+    for pago in pagos:
+        pagado = pagado + pago["monto"]
+    return round(pagado, 2)
+
+
+def limpiar_venta():
+    session.pop("carrito_venta", None)
+    session.pop("pagos_venta", None)
+    session.pop("cotizacion_venta", None)
+
+
+# ===== Lista y pantalla de venta =====
 
 @ventas_bp.route("/")
 def lista():
@@ -31,15 +54,26 @@ def lista():
 @ventas_bp.route("/nueva")
 def nueva():
     carrito = obtener_carrito()
+    pagos = obtener_pagos()
+    total = calcular_total(carrito)
+    pagado = calcular_pagado(pagos)
+
     return render_template(
         "ventas/nueva.html",
         carrito=carrito,
-        total=calcular_total(carrito),
+        pagos=pagos,
+        total=total,
+        pagado=pagado,
+        pendiente=round(total - pagado, 2),
         productos=producto_model.listar_activos(),
         clientes=cliente_model.listar(),
-        apertura=caja_model.obtener_apertura_activa(session["id_usuario"])
+        metodos=venta_model.listar_metodos_pago(),
+        apertura=caja_model.obtener_apertura_activa(session["id_usuario"]),
+        cotizacion=session.get("cotizacion_venta")
     )
 
+
+# ===== Productos =====
 
 @ventas_bp.route("/agregar", methods=["POST"])
 def agregar():
@@ -61,7 +95,6 @@ def agregar():
 
     carrito = obtener_carrito()
 
-    # Buscar si el producto ya está en el carrito
     linea_existente = None
     for linea in carrito:
         if linea["id_producto"] == id_producto:
@@ -71,24 +104,23 @@ def agregar():
     if linea_existente is not None:
         cantidad_total = linea_existente["cantidad"] + cantidad
 
-    # Primera revisión de stock (Oracle vuelve a validarlo al registrar)
     if cantidad_total > producto["stock"]:
         flash("Stock insuficiente de " + producto["nombre"] + ". Disponible: " +
-            str(producto["stock"]) + ", solicitado: " + str(cantidad_total) + ".", "error")
+              str(producto["stock"]) + ", solicitado: " + str(cantidad_total) + ".", "error")
         return redirect(url_for("ventas.nueva"))
 
     precio = producto["precio_venta"]
 
     if linea_existente is not None:
         linea_existente["cantidad"] = cantidad_total
-        linea_existente["subtotal"] = cantidad_total * precio
+        linea_existente["subtotal"] = round(cantidad_total * precio, 2)
     else:
         carrito.append({
             "id_producto": id_producto,
             "nombre": producto["nombre"],
             "cantidad": cantidad,
             "precio_venta": precio,
-            "subtotal": cantidad * precio
+            "subtotal": round(cantidad * precio, 2)
         })
 
     session.modified = True
@@ -104,9 +136,86 @@ def quitar(indice):
     return redirect(url_for("ventas.nueva"))
 
 
+# ===== Pagos =====
+
+@ventas_bp.route("/agregar-pago", methods=["POST"])
+def agregar_pago():
+    try:
+        id_metodo = int(request.form["id_metodo"])
+        monto = round(float(request.form["monto"]), 2)
+    except ValueError:
+        flash("Seleccione el método de pago e ingrese un monto válido.", "error")
+        return redirect(url_for("ventas.nueva"))
+
+    # Buscar el método elegido en el catálogo
+    metodo = None
+    for opcion in venta_model.listar_metodos_pago():
+        if opcion["id_metodo"] == id_metodo:
+            metodo = opcion
+
+    if metodo is None:
+        flash("El método de pago no es válido.", "error")
+        return redirect(url_for("ventas.nueva"))
+
+    pagos = obtener_pagos()
+    pendiente = round(calcular_total(obtener_carrito()) - calcular_pagado(pagos), 2)
+
+    if monto <= 0:
+        flash("El monto del pago debe ser mayor a cero.", "error")
+        return redirect(url_for("ventas.nueva"))
+
+    if monto > pendiente:
+        flash("El pago (Q" + "%.2f" % monto + ") supera el saldo pendiente (Q" + "%.2f" % pendiente + ").", "error")
+        return redirect(url_for("ventas.nueva"))
+
+    referencia = request.form.get("referencia", "").strip()
+    monto_recibido = None
+    cambio = None
+
+    if metodo["es_efectivo"]:
+        referencia = ""   # el efectivo no lleva referencia
+        recibido_texto = request.form.get("monto_recibido", "").strip()
+        if recibido_texto != "":
+            try:
+                monto_recibido = round(float(recibido_texto), 2)
+            except ValueError:
+                flash("El efectivo recibido no es un número válido.", "error")
+                return redirect(url_for("ventas.nueva"))
+            if monto_recibido < monto:
+                flash("El efectivo recibido no cubre el monto del pago.", "error")
+                return redirect(url_for("ventas.nueva"))
+            cambio = round(monto_recibido - monto, 2)
+
+    elif metodo["requiere_referencia"] and referencia == "":
+        flash("El pago con " + metodo["nombre"] + " requiere el número de autorización o referencia.", "error")
+        return redirect(url_for("ventas.nueva"))
+
+    pagos.append({
+        "id_metodo": id_metodo,
+        "metodo": metodo["nombre"],
+        "monto": monto,
+        "referencia": referencia if referencia != "" else None,
+        "monto_recibido": monto_recibido,
+        "cambio": cambio
+    })
+    session.modified = True
+    return redirect(url_for("ventas.nueva"))
+
+
+@ventas_bp.route("/quitar-pago/<int:indice>", methods=["POST"])
+def quitar_pago(indice):
+    pagos = obtener_pagos()
+    if 0 <= indice < len(pagos):
+        pagos.pop(indice)
+        session.modified = True
+    return redirect(url_for("ventas.nueva"))
+
+
+# ===== Cancelar y registrar =====
+
 @ventas_bp.route("/cancelar", methods=["POST"])
 def cancelar():
-    session.pop("carrito_venta", None)
+    limpiar_venta()
     flash("Venta cancelada.", "exito")
     return redirect(url_for("ventas.lista"))
 
@@ -114,19 +223,35 @@ def cancelar():
 @ventas_bp.route("/registrar", methods=["POST"])
 def registrar():
     carrito = obtener_carrito()
+    pagos = obtener_pagos()
+    cotizacion = session.get("cotizacion_venta")
 
     if len(carrito) == 0:
         flash("Agregue al menos un producto a la venta.", "error")
         return redirect(url_for("ventas.nueva"))
 
-    id_cliente = request.form.get("id_cliente", "")
-    if id_cliente == "":
-        flash("Seleccione el cliente.", "error")
+    # Si la venta viene de una cotización, el cliente es el de la cotización
+    if cotizacion is not None:
+        id_cliente = cotizacion["id_cliente"]
+        id_cotizacion = cotizacion["id_cotizacion"]
+    else:
+        id_cliente_texto = request.form.get("id_cliente", "")
+        if id_cliente_texto == "":
+            flash("Seleccione el cliente.", "error")
+            return redirect(url_for("ventas.nueva"))
+        id_cliente = int(id_cliente_texto)
+        id_cotizacion = None
+
+    total = calcular_total(carrito)
+    pagado = calcular_pagado(pagos)
+
+    if len(pagos) == 0 or pagado != total:
+        flash("Los pagos (Q" + "%.2f" % pagado + ") deben cubrir exactamente el total (Q" + "%.2f" % total + ").", "error")
         return redirect(url_for("ventas.nueva"))
 
     try:
-        id_venta = venta_model.registrar(int(id_cliente), session["id_usuario"], carrito)
-        session.pop("carrito_venta", None)
+        id_venta = venta_model.registrar(id_cliente, session["id_usuario"], carrito, pagos, id_cotizacion)
+        limpiar_venta()
         flash("Venta #" + str(id_venta) + " registrada. Se actualizó el stock, el Kardex y la caja.", "exito")
         return redirect(url_for("ventas.detalle", id_venta=id_venta))
     except oracledb.DatabaseError as e:
@@ -141,5 +266,9 @@ def detalle(id_venta):
         flash("La venta no existe.", "error")
         return redirect(url_for("ventas.lista"))
 
-    lineas = venta_model.obtener_detalle(id_venta)
-    return render_template("ventas/detalle.html", venta=venta, lineas=lineas)
+    return render_template(
+        "ventas/detalle.html",
+        venta=venta,
+        lineas=venta_model.obtener_detalle(id_venta),
+        pagos=venta_model.obtener_pagos(id_venta)
+    )

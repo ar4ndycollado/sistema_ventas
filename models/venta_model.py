@@ -75,21 +75,19 @@ def obtener_detalle(id_venta):
     return lineas
 
 
-def registrar(id_cliente, id_usuario, lineas, id_cotizacion=None):
-    """Registra la venta completa en UNA sola transacción.
-    Si cualquier validación o producto falla, se deshace todo con ROLLBACK."""
+def registrar(id_cliente, id_usuario, lineas, pagos, id_cotizacion=None):
+    """Registra la venta completa (productos y pagos) en UNA sola transacción."""
     conexion = obtener_conexion()
     cursor = conexion.cursor()
 
     try:
-        # Variable donde Oracle devolverá el número de venta (parámetro OUT)
         id_venta_var = cursor.var(int)
 
-        # 1. Encabezado: valida cliente, usuario activo y caja abierta
+        # 1. Encabezado: valida cliente, usuario activo, caja abierta y cotización
         cursor.callproc("SP_CREAR_VENTA", [id_cliente, id_usuario, id_cotizacion, id_venta_var])
         id_venta = id_venta_var.getvalue()
 
-        # 2. Detalle: un procedimiento por cada producto del carrito
+        # 2. Detalle: un procedimiento por cada producto
         for linea in lineas:
             cursor.callproc("SP_AGREGAR_DETALLE_VENTA", [
                 id_venta,
@@ -97,18 +95,70 @@ def registrar(id_cliente, id_usuario, lineas, id_cotizacion=None):
                 linea["cantidad"]
             ])
 
-        # 3. Operación de caja
+        # 3. Pagos: un procedimiento por cada pago
+        for pago in pagos:
+            cursor.callproc("SP_AGREGAR_PAGO_VENTA", [
+                id_venta,
+                pago["id_metodo"],
+                pago["monto"],
+                pago["referencia"],
+                pago["monto_recibido"]
+            ])
+
+        # 4. Valida que los pagos cubran el total y actualiza la caja
         cursor.callproc("SP_FINALIZAR_VENTA", [id_venta])
 
-        # 4. Todo salió bien: confirmar la venta completa
         conexion.commit()
         return id_venta
 
     except oracledb.DatabaseError:
-        # Algo falló: deshacer TODO (venta, detalles, stock, Kardex, caja)
         conexion.rollback()
         raise
 
     finally:
         cursor.close()
         conexion.close()
+
+def listar_metodos_pago():
+    metodos = []
+    with obtener_conexion() as conexion:
+        with conexion.cursor() as cursor:
+            cursor.execute("""
+                SELECT id_metodo, nombre, afecta_caja, requiere_referencia
+                FROM METODO_PAGO
+                WHERE estado = 'A'
+                ORDER BY id_metodo
+            """)
+            for fila in cursor.fetchall():
+                metodos.append({
+                    "id_metodo": fila[0],
+                    "nombre": fila[1],
+                    "es_efectivo": fila[2] == "S",
+                    "requiere_referencia": fila[3] == "S"
+                })
+    return metodos
+
+
+def obtener_pagos(id_venta):
+    pagos = []
+    with obtener_conexion() as conexion:
+        with conexion.cursor() as cursor:
+            cursor.execute("""
+                SELECT m.nombre, p.monto, p.referencia, p.monto_recibido
+                FROM PAGO_VENTA p
+                JOIN METODO_PAGO m ON p.id_metodo = m.id_metodo
+                WHERE p.id_venta = :id_venta
+                ORDER BY p.id_pago
+            """, {"id_venta": id_venta})
+            for fila in cursor.fetchall():
+                cambio = None
+                if fila[3] is not None:
+                    cambio = fila[3] - fila[1]      # el cambio se calcula, no se guarda
+                pagos.append({
+                    "metodo": fila[0],
+                    "monto": fila[1],
+                    "referencia": fila[2],
+                    "monto_recibido": fila[3],
+                    "cambio": cambio
+                })
+    return pagos

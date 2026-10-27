@@ -513,4 +513,8 @@ h1 { font-size: 24px; margin-bottom: 8px; }
     font-size: 13px;
 }
 
+/* ===== Saldo de pagos ===== */
+.texto-ok        { color: var(--exito); }
+.texto-pendiente { color: #a16207; }
+
 /* =====
