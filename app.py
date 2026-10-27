@@ -16,6 +16,7 @@ from controllers.auth_controller import auth_bp
 from controllers.seguridad import tiene_permiso, tiene_rol
 from controllers.kardex_controller import kardex_bp
 from controllers.reportes_controller import reportes_bp
+from controllers.usuarios_controller import usuarios_bp
 
 app = Flask(__name__)
 app.secret_key = config.SECRET_KEY
@@ -32,6 +33,7 @@ app.register_blueprint(cotizaciones_bp)
 app.register_blueprint(caja_bp)
 app.register_blueprint(kardex_bp)
 app.register_blueprint(reportes_bp)
+app.register_blueprint(usuarios_bp)
 
 
 @app.before_request

@@ -458,4 +458,29 @@ h1 { font-size: 24px; margin-bottom: 8px; }
     border-radius: 6px;
 }
 
+/* ===== Casillas de verificación (roles) ===== */
+.opciones-check {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.formulario .check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    color: var(--texto);
+    cursor: pointer;
+    margin-bottom: 0;
+}
+
+.formulario .check input {
+    width: auto;
+    margin-bottom: 0;
+}
+
 /* =====

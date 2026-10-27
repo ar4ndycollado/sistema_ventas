@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block titulo %}Usuarios{% endblock %}
+
+{% block contenido %}
+<div class="encabezado">
+    <div>
+        <h1>Usuarios</h1>
+        <p class="subtitulo">{{ usuarios | length }} usuarios registrados</p>
+    </div>
+    <a href="{{ url_for('usuarios.nuevo') }}" class="boton boton-principal">+ Nuevo usuario</a>
+</div>
+
+<div class="tarjeta">
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Roles</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario in usuarios %}
+            <tr class="{{ 'fila-inactiva' if usuario.estado == 'I' }}">
+                <td>{{ usuario.id_usuario }}</td>
+                <td>
+                    {{ usuario.usuario }}
+                    {% if usuario.id_usuario == session['id_usuario'] %}<span class="etiqueta etiqueta-azul">Usted</span>{% endif %}
+                </td>
+                <td>{{ usuario.roles or 'Sin rol' }}</td>
+                <td>
+                    {% if usuario.estado == 'A' %}
+                        <span class="etiqueta etiqueta-verde">Activo</span>
+                    {% else %}
+                        <span class="etiqueta etiqueta-gris">Inactivo</span>
+                    {% endif %}
+                </td>
+                <td class="acciones">
+                    <a href="{{ url_for('usuarios.editar', id_usuario=usuario.id_usuario) }}" class="boton-chico">Editar</a>
+                    {% if usuario.id_usuario != session['id_usuario'] %}
+                    <form method="POST" action="{{ url_for('usuarios.cambiar_estado', id_usuario=usuario.id_usuario) }}">
+                        <button type="submit" class="boton-chico {{ 'boton-peligro' if usuario.estado == 'A' }}">
+                            {{ 'Desactivar' if usuario.estado == 'A' else 'Activar' }}
+                        </button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="vacio">No hay usuarios registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

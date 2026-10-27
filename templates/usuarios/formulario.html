@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ 'Nuevo usuario' if es_nuevo else 'Editar usuario' }}{% endblock %}
+
+{% block contenido %}
+<h1>{{ 'Nuevo usuario' if es_nuevo else 'Editar usuario' }}</h1>
+<p class="subtitulo">Los campos con <span class="obligatorio">*</span> son obligatorios.</p>
+
+<div class="tarjeta tarjeta-formulario">
+    <form method="POST" class="formulario">
+        <label for="usuario">Nombre de usuario <span class="obligatorio">*</span></label>
+        <input type="text" id="usuario" name="usuario" value="{{ usuario.usuario or '' }}" maxlength="50">
+
+        <div class="fila-campos">
+            <div>
+                <label for="password">
+                    Contraseña {% if es_nuevo %}<span class="obligatorio">*</span>{% endif %}
+                </label>
+                <input type="password" id="password" name="password" autocomplete="new-password">
+            </div>
+            <div>
+                <label for="confirmar">Confirmar contraseña</label>
+                <input type="password" id="confirmar" name="confirmar" autocomplete="new-password">
+            </div>
+        </div>
+
+        {% if not es_nuevo %}
+        <p class="nota">Deje la contraseña vacía para conservar la actual.</p>
+        {% endif %}
+
+        <label>Roles <span class="obligatorio">*</span></label>
+        <div class="opciones-check">
+            {% for rol in roles %}
+            <label class="check">
+                <input type="checkbox" name="roles" value="{{ rol.id_rol }}"
+                    {{ 'checked' if rol.id_rol in usuario.roles }}>
+                {{ rol.nombre_rol }}
+            </label>
+            {% endfor %}
+        </div>
+
+        <div class="botones-form">
+            <button type="submit" class="boton boton-principal">Guardar</button>
+            <a href="{{ url_for('usuarios.lista') }}" class="boton boton-secundario">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
