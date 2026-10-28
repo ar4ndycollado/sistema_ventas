@@ -3,3 +3,6 @@ __pycache__/
 
 # Contiene contraseñas: cada quien lo crea a partir de config.example.py
 config.py
+
+# Archivo de contexto local (no se entrega)
+CLAUDE.md
