@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1088" height="560" viewBox="-14 12 1088 560">
+<style>
+ .l { stroke:#444; stroke-width:1.2; }
+ .e { fill:#ffffff; stroke:#1f3b63; stroke-width:1.8; }
+ .r { fill:#ffffff; stroke:#1f3b63; stroke-width:1.5; }
+ .o { fill:#ffffff; stroke:#555; stroke-width:1.1; }
+ text { font-family:Arial, Helvetica, sans-serif; text-anchor:middle; fill:#111; }
+ .te { font-size:13px; font-weight:bold; fill:#1f3b63; }
+ .tr { font-size:11px; font-weight:bold; }
+ .ta { font-size:11px; }
+ .tc { font-size:13px; font-weight:bold; fill:#b3261e; paint-order:stroke; stroke:#fff; stroke-width:4px; }
+ .tt { font-size:16px; font-weight:bold; text-anchor:start; fill:#1f3b63; }
+</style>
+<rect x="-14" y="12" width="1088" height="560" fill="#ffffff"/>
+<text x="6" y="42" class="tt">Diagrama ER — Cotizaciones y Clientes</text>
+<line x1="170.0" y1="330.0" x2="287.8" y2="384.9" class="l"/>
+<line x1="170.0" y1="330.0" x2="230.0" y2="445.3" class="l"/>
+<line x1="170.0" y1="330.0" x2="147.4" y2="458.0" class="l"/>
+<line x1="170.0" y1="330.0" x2="74.2" y2="417.8" class="l"/>
+<line x1="170.0" y1="330.0" x2="40.5" y2="341.3" class="l"/>
+<line x1="560.0" y1="330.0" x2="736.7" y2="432.0" class="l"/>
+<line x1="560.0" y1="330.0" x2="662.0" y2="506.7" class="l"/>
+<line x1="560.0" y1="330.0" x2="560.0" y2="534.0" class="l"/>
+<line x1="560.0" y1="330.0" x2="458.0" y2="506.7" class="l"/>
+<line x1="560.0" y1="330.0" x2="383.3" y2="432.0" class="l"/>
+<line x1="790.0" y1="330.0" x2="712.2" y2="275.5" class="l"/>
+<line x1="790.0" y1="330.0" x2="790.0" y2="235.0" class="l"/>
+<line x1="790.0" y1="330.0" x2="867.8" y2="275.5" class="l"/>
+<polyline points="360.0,330.0 170.0,330.0" class="l" fill="none"/>
+<polyline points="360.0,330.0 560.0,330.0" class="l" fill="none"/>
+<polyline points="560.0,200.0 560.0,90.0" class="l" fill="none"/>
+<polyline points="560.0,200.0 560.0,330.0" class="l" fill="none"/>
+<polyline points="790.0,330.0 560.0,330.0" class="l" fill="none"/>
+<polyline points="790.0,330.0 990.0,330.0" class="l" fill="none"/>
+<ellipse cx="287.8" cy="384.9" rx="37.8" ry="13.0" class="o"/>
+<ellipse cx="230.0" cy="445.3" rx="31.1" ry="13.0" class="o"/>
+<ellipse cx="147.4" cy="458.0" rx="35.6" ry="13.0" class="o"/>
+<ellipse cx="74.2" cy="417.8" rx="34.1" ry="13.0" class="o"/>
+<ellipse cx="40.5" cy="341.3" rx="29.5" ry="13.0" class="o"/>
+<ellipse cx="736.7" cy="432.0" rx="47.1" ry="13.0" class="o"/>
+<ellipse cx="662.0" cy="506.7" rx="26.4" ry="13.0" class="o"/>
+<ellipse cx="560.0" cy="534.0" rx="62.5" ry="13.0" class="o"/>
+<ellipse cx="458.0" cy="506.7" rx="24.9" ry="13.0" class="o" stroke-dasharray="4 3"/>
+<ellipse cx="383.3" cy="432.0" rx="29.5" ry="13.0" class="o"/>
+<ellipse cx="712.2" cy="275.5" rx="34.1" ry="13.0" class="o"/>
+<ellipse cx="790.0" cy="235.0" rx="27.9" ry="13.0" class="o"/>
+<ellipse cx="867.8" cy="275.5" rx="34.1" ry="13.0" class="o" stroke-dasharray="4 3"/>
+<polygon points="360,305.0 411.92,330 360,355.0 308.08,330" class="r"/>
+<polygon points="560,175.0 608.18,200 560,225.0 511.82,200" class="r"/>
+<polygon points="790,305.0 879.3199999999999,330 790,355.0 700.6800000000001,330" class="r"/>
+<rect x="502.8" y="313.0" width="114.4" height="34" class="e"/>
+<rect x="121.6" y="313.0" width="96.7" height="34" class="e"/>
+<rect x="516.1" y="73.0" width="87.9" height="34" class="e"/>
+<rect x="937.2" y="313.0" width="105.6" height="34" class="e"/>
+<text x="287.8" y="388.9" class="ta" text-decoration="underline" font-weight="bold">id_cliente</text>
+<text x="230.0" y="449.3" class="ta">nombre</text>
+<text x="147.4" y="462.0" class="ta">direccion</text>
+<text x="74.2" y="421.8" class="ta">telefono</text>
+<text x="40.5" y="345.3" class="ta">correo</text>
+<text x="736.7" y="436.0" class="ta" text-decoration="underline" font-weight="bold">id_cotizacion</text>
+<text x="662.0" y="510.7" class="ta">fecha</text>
+<text x="560.0" y="538.0" class="ta">fecha_vencimiento</text>
+<text x="458.0" y="510.7" class="ta">total</text>
+<text x="383.3" y="436.0" class="ta">estado</text>
+<text x="712.2" y="279.5" class="ta">cantidad</text>
+<text x="790.0" y="239.0" class="ta">precio</text>
+<text x="867.8" y="279.5" class="ta">subtotal</text>
+<text x="233.4" y="343.5" class="tc">1</text>
+<text x="487.8" y="325.5" class="tc">N</text>
+<text x="360" y="334" class="tr">SOLICITA</text>
+<text x="551.0" y="126.5" class="tc">1</text>
+<text x="569.0" y="302.5" class="tc">N</text>
+<text x="560" y="204" class="tr">ELABORA</text>
+<text x="632.2" y="343.5" class="tc">N</text>
+<text x="922.2" y="325.5" class="tc">M</text>
+<text x="790" y="334" class="tr">DETALLE_COTIZACION</text>
+<text x="560" y="334.5" class="te">COTIZACION</text>
+<text x="170" y="334.5" class="te">CLIENTES</text>
+<text x="560" y="94.5" class="te">USUARIO</text>
+<text x="990" y="334.5" class="te">PRODUCTOS</text>
+</svg>

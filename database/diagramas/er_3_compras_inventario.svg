@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1305" height="848" viewBox="4 22 1305 848">
+<style>
+ .l { stroke:#444; stroke-width:1.2; }
+ .e { fill:#ffffff; stroke:#1f3b63; stroke-width:1.8; }
+ .r { fill:#ffffff; stroke:#1f3b63; stroke-width:1.5; }
+ .o { fill:#ffffff; stroke:#555; stroke-width:1.1; }
+ text { font-family:Arial, Helvetica, sans-serif; text-anchor:middle; fill:#111; }
+ .te { font-size:13px; font-weight:bold; fill:#1f3b63; }
+ .tr { font-size:11px; font-weight:bold; }
+ .ta { font-size:11px; }
+ .tc { font-size:13px; font-weight:bold; fill:#b3261e; paint-order:stroke; stroke:#fff; stroke-width:4px; }
+ .tt { font-size:16px; font-weight:bold; text-anchor:start; fill:#1f3b63; }
+</style>
+<rect x="4" y="22" width="1305" height="848" fill="#ffffff"/>
+<text x="24" y="52" class="tt">Diagrama ER — Compras e Inventario</text>
+<line x1="660.0" y1="430.0" x2="599.1" y2="358.0" class="l"/>
+<line x1="660.0" y1="430.0" x2="688.2" y2="358.0" class="l"/>
+<line x1="660.0" y1="430.0" x2="785.0" y2="358.0" class="l"/>
+<line x1="660.0" y1="430.0" x2="897.8" y2="358.0" class="l"/>
+<line x1="660.0" y1="430.0" x2="472.5" y2="502.0" class="l"/>
+<line x1="660.0" y1="430.0" x2="561.7" y2="502.0" class="l"/>
+<line x1="660.0" y1="430.0" x2="723.9" y2="502.0" class="l"/>
+<line x1="660.0" y1="430.0" x2="820.6" y2="502.0" class="l"/>
+<line x1="230.0" y1="430.0" x2="101.6" y2="396.0" class="l"/>
+<line x1="230.0" y1="430.0" x2="101.6" y2="430.0" class="l"/>
+<line x1="230.0" y1="430.0" x2="101.6" y2="464.0" class="l"/>
+<line x1="230.0" y1="720.0" x2="76.3" y2="652.0" class="l"/>
+<line x1="230.0" y1="720.0" x2="76.3" y2="686.0" class="l"/>
+<line x1="230.0" y1="720.0" x2="76.3" y2="720.0" class="l"/>
+<line x1="230.0" y1="720.0" x2="76.3" y2="754.0" class="l"/>
+<line x1="230.0" y1="720.0" x2="76.3" y2="788.0" class="l"/>
+<line x1="430.0" y1="430.0" x2="348.0" y2="361.2" class="l"/>
+<line x1="430.0" y1="430.0" x2="430.0" y2="323.0" class="l"/>
+<line x1="430.0" y1="430.0" x2="512.0" y2="361.2" class="l"/>
+<line x1="1080.0" y1="430.0" x2="1223.9" y2="311.0" class="l"/>
+<line x1="1080.0" y1="430.0" x2="1223.9" y2="345.0" class="l"/>
+<line x1="1080.0" y1="430.0" x2="1223.9" y2="379.0" class="l"/>
+<line x1="1080.0" y1="430.0" x2="1223.9" y2="413.0" class="l"/>
+<line x1="1080.0" y1="430.0" x2="1223.9" y2="447.0" class="l"/>
+<line x1="1080.0" y1="430.0" x2="1223.9" y2="481.0" class="l"/>
+<line x1="1080.0" y1="430.0" x2="1223.9" y2="515.0" class="l"/>
+<line x1="1080.0" y1="430.0" x2="1223.9" y2="549.0" class="l"/>
+<line x1="660.0" y1="760.0" x2="414.0" y2="832.0" class="l"/>
+<line x1="660.0" y1="760.0" x2="526.8" y2="832.0" class="l"/>
+<line x1="660.0" y1="760.0" x2="642.7" y2="832.0" class="l"/>
+<line x1="660.0" y1="760.0" x2="734.8" y2="832.0" class="l"/>
+<line x1="660.0" y1="760.0" x2="806.2" y2="832.0" class="l"/>
+<line x1="660.0" y1="760.0" x2="898.3" y2="832.0" class="l"/>
+<polyline points="430.0,430.0 230.0,430.0" class="l" fill="none"/>
+<polyline points="430.0,430.0 660.0,430.0" class="l" fill="none"/>
+<polyline points="230.0,575.0 230.0,720.0" class="l" fill="none"/>
+<polyline points="230.0,575.0 230.0,430.0" class="l" fill="none"/>
+<polyline points="230.0,250.0 660.0,100.0" class="l" fill="none"/>
+<polyline points="230.0,250.0 230.0,430.0" class="l" fill="none"/>
+<polyline points="880.0,430.0 660.0,430.0" class="l" fill="none"/>
+<polyline points="880.0,430.0 1080.0,430.0" class="l" fill="none"/>
+<polyline points="890.0,250.0 660.0,100.0" class="l" fill="none"/>
+<polyline points="890.0,250.0 1080.0,430.0" class="l" fill="none"/>
+<polyline points="660.0,620.0 660.0,430.0" class="l" fill="none"/>
+<polyline points="660.0,620.0 660.0,760.0" class="l" fill="none"/>
+<ellipse cx="599.1" cy="358.0" rx="44.0" ry="13.0" class="o"/>
+<ellipse cx="688.2" cy="358.0" rx="31.1" ry="13.0" class="o"/>
+<ellipse cx="785.0" cy="358.0" rx="51.8" ry="13.0" class="o"/>
+<ellipse cx="897.8" cy="358.0" rx="47.1" ry="13.0" class="o"/>
+<ellipse cx="472.5" cy="502.0" rx="26.4" ry="13.0" class="o" stroke-dasharray="4 3"/>
+<ellipse cx="561.7" cy="502.0" rx="48.7" ry="13.0" class="o"/>
+<ellipse cx="723.9" cy="502.0" rx="29.5" ry="13.0" class="o"/>
+<ellipse cx="820.6" cy="502.0" rx="53.2" ry="13.0" class="o"/>
+<ellipse cx="101.6" cy="396.0" rx="39.4" ry="13.0" class="o"/>
+<ellipse cx="101.6" cy="430.0" rx="26.4" ry="13.0" class="o"/>
+<ellipse cx="101.6" cy="464.0" rx="24.9" ry="13.0" class="o" stroke-dasharray="4 3"/>
+<ellipse cx="76.3" cy="652.0" rx="47.1" ry="13.0" class="o"/>
+<ellipse cx="76.3" cy="686.0" rx="31.1" ry="13.0" class="o"/>
+<ellipse cx="76.3" cy="720.0" rx="35.6" ry="13.0" class="o"/>
+<ellipse cx="76.3" cy="754.0" rx="34.1" ry="13.0" class="o"/>
+<ellipse cx="76.3" cy="788.0" rx="18.7" ry="13.0" class="o"/>
+<ellipse cx="348.0" cy="361.2" rx="34.1" ry="13.0" class="o"/>
+<ellipse cx="430.0" cy="323.0" rx="47.1" ry="13.0" class="o"/>
+<ellipse cx="512.0" cy="361.2" rx="34.1" ry="13.0" class="o" stroke-dasharray="4 3"/>
+<ellipse cx="1223.9" cy="311.0" rx="37.8" ry="13.0" class="o"/>
+<ellipse cx="1223.9" cy="345.0" rx="26.4" ry="13.0" class="o"/>
+<ellipse cx="1223.9" cy="379.0" rx="56.4" ry="13.0" class="o"/>
+<ellipse cx="1223.9" cy="413.0" rx="54.8" ry="13.0" class="o"/>
+<ellipse cx="1223.9" cy="447.0" rx="40.3" ry="13.0" class="o"/>
+<ellipse cx="1223.9" cy="481.0" rx="59.4" ry="13.0" class="o"/>
+<ellipse cx="1223.9" cy="515.0" rx="53.2" ry="13.0" class="o"/>
+<ellipse cx="1223.9" cy="549.0" rx="54.8" ry="13.0" class="o"/>
+<ellipse cx="414.0" cy="832.0" rx="44.0" ry="13.0" class="o"/>
+<ellipse cx="526.8" cy="832.0" rx="54.8" ry="13.0" class="o"/>
+<ellipse cx="642.7" cy="832.0" rx="47.1" ry="13.0" class="o"/>
+<ellipse cx="734.8" cy="832.0" rx="31.0" ry="13.0" class="o"/>
+<ellipse cx="806.2" cy="832.0" rx="26.4" ry="13.0" class="o"/>
+<ellipse cx="898.3" cy="832.0" rx="51.7" ry="13.0" class="o"/>
+<polygon points="430,405.0 504.36,430 430,455.0 355.64,430" class="r"/>
+<polygon points="230,550.0 281.92,575 230,600.0 178.07999999999998,575" class="r"/>
+<polygon points="230,225.0 308.1,250 230,275.0 151.9,250" class="r"/>
+<polygon points="880,405.0 925.0,430 880,455.0 835.0,430" class="r"/>
+<polygon points="890,225.0 956.88,250 890,275.0 823.12,250" class="r"/>
+<polygon points="660,595.0 705.0,620 660,645.0 615.0,620" class="r"/>
+<rect x="607.2" y="413.0" width="105.6" height="34" class="e"/>
+<rect x="186.1" y="413.0" width="87.9" height="34" class="e"/>
+<rect x="168.4" y="703.0" width="123.2" height="34" class="e"/>
+<rect x="616.1" y="83.0" width="87.9" height="34" class="e"/>
+<rect x="1040.5" y="413.0" width="79.0" height="34" class="e"/>
+<rect x="567.4" y="743.0" width="185.1" height="34" class="e"/>
+<text x="599.1" y="362.0" class="ta" text-decoration="underline" font-weight="bold">id_producto</text>
+<text x="688.2" y="362.0" class="ta">nombre</text>
+<text x="785.0" y="362.0" class="ta">precio_compra</text>
+<text x="897.8" y="362.0" class="ta">precio_venta</text>
+<text x="472.5" y="506.0" class="ta">stock</text>
+<text x="561.7" y="506.0" class="ta">stock_minimo</text>
+<text x="723.9" y="506.0" class="ta">estado</text>
+<text x="820.6" y="506.0" class="ta">fecha_registro</text>
+<text x="101.6" y="400.0" class="ta" text-decoration="underline" font-weight="bold">id_compra</text>
+<text x="101.6" y="434.0" class="ta">fecha</text>
+<text x="101.6" y="468.0" class="ta">total</text>
+<text x="76.3" y="656.0" class="ta" text-decoration="underline" font-weight="bold">id_proveedor</text>
+<text x="76.3" y="690.0" class="ta">nombre</text>
+<text x="76.3" y="724.0" class="ta">direccion</text>
+<text x="76.3" y="758.0" class="ta">telefono</text>
+<text x="76.3" y="792.0" class="ta">nit</text>
+<text x="348.0" y="365.2" class="ta">cantidad</text>
+<text x="430.0" y="327.0" class="ta">precio_costo</text>
+<text x="512.0" y="365.2" class="ta">subtotal</text>
+<text x="1223.9" y="315.0" class="ta" text-decoration="underline" font-weight="bold">id_kardex</text>
+<text x="1223.9" y="349.0" class="ta">fecha</text>
+<text x="1223.9" y="383.0" class="ta">tipo_movimiento</text>
+<text x="1223.9" y="417.0" class="ta">tipo_documento</text>
+<text x="1223.9" y="451.0" class="ta">referencia</text>
+<text x="1223.9" y="485.0" class="ta">cantidad_entrada</text>
+<text x="1223.9" y="519.0" class="ta">cantidad_salida</text>
+<text x="1223.9" y="553.0" class="ta">existencia_final</text>
+<text x="414.0" y="836.0" class="ta" text-decoration="underline" font-weight="bold">id_auditoria</text>
+<text x="526.8" y="836.0" class="ta">precio_anterior</text>
+<text x="642.7" y="836.0" class="ta">precio_nuevo</text>
+<text x="734.8" y="836.0" class="ta">usuario</text>
+<text x="806.2" y="836.0" class="ta">fecha</text>
+<text x="898.3" y="836.0" class="ta">tipo_operacion</text>
+<text x="288.9" y="443.5" class="tc">N</text>
+<text x="592.2" y="425.5" class="tc">M</text>
+<text x="430" y="434" class="tr">DETALLE_COMPRA</text>
+<text x="239.0" y="692.5" class="tc">1</text>
+<text x="221.0" y="466.5" class="tc">N</text>
+<text x="230" y="579" class="tr">ABASTECE</text>
+<text x="598.9" y="116.3" class="tc">1</text>
+<text x="239.0" y="402.5" class="tc">N</text>
+<text x="230" y="254" class="tr">REGISTRA_COMPRA</text>
+<text x="727.8" y="443.5" class="tc">1</text>
+<text x="1025.5" y="425.5" class="tc">N</text>
+<text x="880" y="434" class="tr">MUEVE</text>
+<text x="693.7" y="137.2" class="tc">1</text>
+<text x="1057.4" y="400.7" class="tc">N</text>
+<text x="890" y="254" class="tr">REGISTRA_MOV</text>
+<text x="651.0" y="466.5" class="tc">1</text>
+<text x="669.0" y="732.5" class="tc">N</text>
+<text x="660" y="624" class="tr">AUDITA</text>
+<text x="660" y="434.5" class="te">PRODUCTOS</text>
+<text x="230" y="434.5" class="te">COMPRAS</text>
+<text x="230" y="724.5" class="te">PROVEEDORES</text>
+<text x="660" y="104.5" class="te">USUARIO</text>
+<text x="1080" y="434.5" class="te">KARDEX</text>
+<text x="660" y="764.5" class="te">AUDITORIA_PRODUCTO</text>
+</svg>

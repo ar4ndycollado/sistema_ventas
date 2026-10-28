@@ -1,0 +1,180 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1811" height="1117" viewBox="15 -59 1811 1117">
+<style>
+ .l { stroke:#444; stroke-width:1.2; }
+ .e { fill:#ffffff; stroke:#1f3b63; stroke-width:1.8; }
+ .r { fill:#ffffff; stroke:#1f3b63; stroke-width:1.5; }
+ .o { fill:#ffffff; stroke:#555; stroke-width:1.1; }
+ text { font-family:Arial, Helvetica, sans-serif; text-anchor:middle; fill:#111; }
+ .te { font-size:13px; font-weight:bold; fill:#1f3b63; }
+ .tr { font-size:11px; font-weight:bold; }
+ .ta { font-size:11px; }
+ .tc { font-size:13px; font-weight:bold; fill:#b3261e; paint-order:stroke; stroke:#fff; stroke-width:4px; }
+ .tt { font-size:16px; font-weight:bold; text-anchor:start; fill:#1f3b63; }
+</style>
+<rect x="15" y="-59" width="1811" height="1117" fill="#ffffff"/>
+<text x="35" y="-29" class="tt">Diagrama Entidad–Relación general — Eden Store</text>
+<polyline points="110.0,210.0 110.0,90.0" class="l" fill="none"/>
+<polyline points="110.0,210.0 110.0,330.0" class="l" fill="none"/>
+<polyline points="290.0,330.0 110.0,330.0" class="l" fill="none"/>
+<polyline points="290.0,330.0 470.0,330.0" class="l" fill="none"/>
+<polyline points="640.0,25.0 25.0,25.0 25.0,330.0 110.0,330.0" class="l" fill="none"/>
+<polyline points="640.0,25.0 1155.0,25.0 1155.0,330.0" class="l" fill="none"/>
+<polyline points="470.0,210.0 470.0,330.0" class="l" fill="none"/>
+<polyline points="470.0,210.0 470.0,90.0" class="l" fill="none"/>
+<polyline points="635.0,210.0 470.0,330.0" class="l" fill="none"/>
+<polyline points="635.0,210.0 800.0,90.0" class="l" fill="none"/>
+<polyline points="965.0,210.0 1115.0,330.0" class="l" fill="none"/>
+<polyline points="965.0,210.0 800.0,90.0" class="l" fill="none"/>
+<polyline points="1315.0,330.0 1130.0,330.0" class="l" fill="none"/>
+<polyline points="1315.0,330.0 1500.0,330.0" class="l" fill="none"/>
+<polyline points="470.0,510.0 470.0,690.0" class="l" fill="none"/>
+<polyline points="470.0,510.0 470.0,330.0" class="l" fill="none"/>
+<polyline points="760.0,470.0 1092.0,330.0" class="l" fill="none"/>
+<polyline points="760.0,470.0 470.0,690.0" class="l" fill="none"/>
+<polyline points="820.0,590.0 1130.0,690.0" class="l" fill="none"/>
+<polyline points="820.0,590.0 470.0,330.0" class="l" fill="none"/>
+<polyline points="985.0,510.0 1112.0,330.0" class="l" fill="none"/>
+<polyline points="985.0,510.0 1105.0,690.0" class="l" fill="none"/>
+<polyline points="1130.0,510.0 1130.0,330.0" class="l" fill="none"/>
+<polyline points="1130.0,510.0 1130.0,690.0" class="l" fill="none"/>
+<polyline points="1280.0,510.0 1148.0,330.0" class="l" fill="none"/>
+<polyline points="1280.0,510.0 1155.0,690.0" class="l" fill="none"/>
+<polyline points="1500.0,510.0 1168.0,330.0" class="l" fill="none"/>
+<polyline points="1500.0,510.0 1500.0,690.0" class="l" fill="none"/>
+<polyline points="800.0,690.0 470.0,690.0" class="l" fill="none"/>
+<polyline points="800.0,690.0 1130.0,690.0" class="l" fill="none"/>
+<polyline points="470.0,900.0 800.0,900.0" class="l" fill="none"/>
+<polyline points="470.0,900.0 470.0,690.0" class="l" fill="none"/>
+<polyline points="965.0,800.0 800.0,900.0" class="l" fill="none"/>
+<polyline points="965.0,800.0 1130.0,690.0" class="l" fill="none"/>
+<polyline points="1315.0,690.0 1500.0,690.0" class="l" fill="none"/>
+<polyline points="1315.0,690.0 1130.0,690.0" class="l" fill="none"/>
+<polyline points="1500.0,800.0 1500.0,900.0" class="l" fill="none"/>
+<polyline points="1500.0,800.0 1500.0,690.0" class="l" fill="none"/>
+<polyline points="1720.0,690.0 1500.0,690.0" class="l" fill="none"/>
+<polyline points="1720.0,690.0 1720.0,560.0" class="l" fill="none"/>
+<polyline points="1130.0,800.0 1130.0,690.0" class="l" fill="none"/>
+<polyline points="1130.0,800.0 1130.0,900.0" class="l" fill="none"/>
+<polyline points="1245.0,958.0 1350.0,1010.0" class="l" fill="none"/>
+<polyline points="1245.0,958.0 1130.0,900.0" class="l" fill="none"/>
+<polygon points="110,185.0 161.92000000000002,210 110,235.0 58.08,210" class="r"/>
+<polygon points="290,305.0 364.36,330 290,355.0 215.64000000000001,330" class="r"/>
+<polygon points="640,0.0 718.1,25 640,50.0 561.9,25" class="r"/>
+<polygon points="470,185.0 515.0,210 470,235.0 425.0,210" class="r"/>
+<polygon points="635,185.0 680.0,210 635,235.0 590.0,210" class="r"/>
+<polygon points="965,185.0 1031.88,210 965,235.0 898.12,210" class="r"/>
+<polygon points="1315,305.0 1378.14,330 1315,355.0 1251.86,330" class="r"/>
+<polygon points="470,485.0 559.3199999999999,510 470,535.0 380.68,510" class="r"/>
+<polygon points="760,445.0 808.18,470 760,495.0 711.82,470" class="r"/>
+<polygon points="820,565.0 890.62,590 820,615.0 749.38,590" class="r"/>
+<polygon points="985,485.0 1074.32,510 985,535.0 895.6800000000001,510" class="r"/>
+<polygon points="1130,485.0 1175.0,510 1130,535.0 1085.0,510" class="r"/>
+<polygon points="1280,485.0 1369.32,510 1280,535.0 1190.68,510" class="r"/>
+<polygon points="1500,485.0 1545.0,510 1500,535.0 1455.0,510" class="r"/>
+<polygon points="800,665.0 859.4,690 800,715.0 740.6,690" class="r"/>
+<polygon points="470,875.0 521.92,900 470,925.0 418.08,900" class="r"/>
+<polygon points="965,775.0 1013.18,800 965,825.0 916.82,800" class="r"/>
+<polygon points="1315,665.0 1370.66,690 1315,715.0 1259.34,690" class="r"/>
+<polygon points="1500,775.0 1548.18,800 1500,825.0 1451.82,800" class="r"/>
+<polygon points="1720,665.0 1765.0,690 1720,715.0 1675.0,690" class="r"/>
+<polygon points="1130,775.0 1178.18,800 1130,825.0 1081.82,800" class="r"/>
+<polygon points="1245,933.0 1290.0,958 1245,983.0 1200.0,958" class="r"/>
+<rect x="48.4" y="73.0" width="123.2" height="34" class="e"/>
+<rect x="66.1" y="313.0" width="87.9" height="34" class="e"/>
+<rect x="417.2" y="313.0" width="105.6" height="34" class="e"/>
+<rect x="377.4" y="73.0" width="185.1" height="34" class="e"/>
+<rect x="760.5" y="73.0" width="79.0" height="34" class="e"/>
+<rect x="1086.1" y="313.0" width="87.9" height="34" class="e"/>
+<rect x="1473.7" y="313.0" width="52.5" height="34" class="e"/>
+<rect x="412.8" y="673.0" width="114.4" height="34" class="e"/>
+<rect x="1090.5" y="673.0" width="79.0" height="34" class="e"/>
+<rect x="751.6" y="883.0" width="96.7" height="34" class="e"/>
+<rect x="1429.5" y="673.0" width="140.9" height="34" class="e"/>
+<rect x="1469.3" y="883.0" width="61.4" height="34" class="e"/>
+<rect x="1645.1" y="543.0" width="149.8" height="34" class="e"/>
+<rect x="1072.8" y="883.0" width="114.4" height="34" class="e"/>
+<rect x="1288.4" y="993.0" width="123.2" height="34" class="e"/>
+<rect x="46.3" y="883.0" width="167.4" height="34" class="e"/>
+<text x="101.0" y="126.5" class="tc">1</text>
+<text x="119.0" y="302.5" class="tc">N</text>
+<text x="110" y="214" class="tr">ABASTECE</text>
+<text x="168.9" y="343.5" class="tc">N</text>
+<text x="402.2" y="325.5" class="tc">M</text>
+<text x="290" y="334" class="tr">DETALLE_COMPRA</text>
+<text x="51.1" y="325.5" class="tc">N</text>
+<text x="1164.0" y="302.5" class="tc">1</text>
+<text x="640" y="29" class="tr">REGISTRA_COMPRA</text>
+<text x="479.0" y="302.5" class="tc">1</text>
+<text x="461.0" y="126.5" class="tc">N</text>
+<text x="470" y="214" class="tr">AUDITA</text>
+<text x="510.8" y="316.0" class="tc">1</text>
+<text x="759.2" y="113.0" class="tc">N</text>
+<text x="635" y="214" class="tr">MUEVE</text>
+<text x="1087.7" y="301.1" class="tc">1</text>
+<text x="830.2" y="127.6" class="tc">N</text>
+<text x="965" y="214" class="tr">REGISTRA_MOV</text>
+<text x="1188.9" y="343.5" class="tc">N</text>
+<text x="1458.7" y="325.5" class="tc">M</text>
+<text x="1315" y="334" class="tr">USUARIO_ROL</text>
+<text x="479.0" y="662.5" class="tc">N</text>
+<text x="461.0" y="366.5" class="tc">M</text>
+<text x="470" y="514" class="tr">DETALLE_COTIZACION</text>
+<text x="1068.7" y="334.5" class="tc">1</text>
+<text x="509.8" y="675.6" class="tc">N</text>
+<text x="760" y="474" class="tr">ELABORA</text>
+<text x="1079.0" y="668.6" class="tc">N</text>
+<text x="499.6" y="367.7" class="tc">M</text>
+<text x="820" y="594" class="tr">DETALLE_VENTA</text>
+<text x="1084.0" y="358.6" class="tc">1</text>
+<text x="1092.8" y="660.0" class="tc">N</text>
+<text x="985" y="514" class="tr">SOLICITA_ANULACION</text>
+<text x="1121.0" y="366.5" class="tc">1</text>
+<text x="1139.0" y="662.5" class="tc">N</text>
+<text x="1130" y="514" class="tr">VENDE</text>
+<text x="1162.1" y="368.9" class="tc">1</text>
+<text x="1182.8" y="670.3" class="tc">N</text>
+<text x="1280" y="514" class="tr">AUTORIZA_ANULACION</text>
+<text x="1182.8" y="352.8" class="tc">1</text>
+<text x="1509.0" y="662.5" class="tc">N</text>
+<text x="1500" y="514" class="tr">ABRE</text>
+<text x="542.2" y="703.5" class="tc">1</text>
+<text x="1075.5" y="685.5" class="tc">1</text>
+<text x="800" y="694" class="tr">SE_FACTURA</text>
+<text x="736.6" y="895.5" class="tc">1</text>
+<text x="461.0" y="726.5" class="tc">N</text>
+<text x="470" y="904" class="tr">SOLICITA</text>
+<text x="845.5" y="887.4" class="tc">1</text>
+<text x="1087.0" y="712.3" class="tc">N</text>
+<text x="965" y="804" class="tr">REALIZA</text>
+<text x="1414.5" y="685.5" class="tc">1</text>
+<text x="1184.5" y="703.5" class="tc">N</text>
+<text x="1315" y="694" class="tr">PERTENECE</text>
+<text x="1509.0" y="872.5" class="tc">1</text>
+<text x="1491.0" y="726.5" class="tc">N</text>
+<text x="1500" y="804" class="tr">SE_ABRE</text>
+<text x="1585.5" y="703.5" class="tc">1</text>
+<text x="1711.0" y="596.5" class="tc">1</text>
+<text x="1720" y="694" class="tr">GENERA</text>
+<text x="1121.0" y="726.5" class="tc">1</text>
+<text x="1139.0" y="872.5" class="tc">N</text>
+<text x="1130" y="804" class="tr">SE_PAGA</text>
+<text x="1306.2" y="982.8" class="tc">1</text>
+<text x="1173.0" y="936.3" class="tc">N</text>
+<text x="1245" y="962" class="tr">USA</text>
+<text x="110" y="94.5" class="te">PROVEEDORES</text>
+<text x="110" y="334.5" class="te">COMPRAS</text>
+<text x="470" y="334.5" class="te">PRODUCTOS</text>
+<text x="470" y="94.5" class="te">AUDITORIA_PRODUCTO</text>
+<text x="800" y="94.5" class="te">KARDEX</text>
+<text x="1130" y="334.5" class="te">USUARIO</text>
+<text x="1500" y="334.5" class="te">ROL</text>
+<text x="470" y="694.5" class="te">COTIZACION</text>
+<text x="1130" y="694.5" class="te">VENTAS</text>
+<text x="800" y="904.5" class="te">CLIENTES</text>
+<text x="1500" y="694.5" class="te">APERTURA_CAJA</text>
+<text x="1500" y="904.5" class="te">CAJA</text>
+<text x="1720" y="564.5" class="te">VALE_DESCUENTO</text>
+<text x="1130" y="904.5" class="te">PAGO_VENTA</text>
+<text x="1350" y="1014.5" class="te">METODO_PAGO</text>
+<text x="130" y="904.5" class="te">POLITICA_SANCION</text>
+</svg>

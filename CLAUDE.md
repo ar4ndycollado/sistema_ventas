@@ -52,7 +52,7 @@ sistema_ventas/
 ├── establecer_passwords.py   # asigna contraseñas cifradas a los usuarios de prueba
 ├── database/
 │   ├── proyecto_sistema_ventas.sql   # script completo (estructura, PL/SQL, datos, pruebas)
-│   └── diagramas/                    # ER, relacional y físico (Data Modeler)
+│   └── diagramas/                    # ER (Chen, er_*.png/svg), relacional y físico (Data Modeler)
 ├── docs/
 │   ├── Documento_Proyecto_Eden_Store.docx   # documento del proyecto (entregar en PDF)
 │   └── capturas/                     # capturas de la app usadas en el documento
@@ -228,14 +228,14 @@ Leyenda: ✅ listo · ⏳ pendiente
 
 | # | Criterio | Valor | Estado | Evidencia |
 |---|---|---|---|---|
-| 7 | Diagrama Entidad–Relación | 0.25 | ⏳ | Data Modeler, modelo lógico |
-| 8 | Entidades y atributos según requerimientos | 0.25 | ⏳ | Diagrama ER |
-| 9 | Relaciones y cardinalidades correctas | 0.25 | ⏳ | Diagrama ER (notación pata de gallo) |
+| 7 | Diagrama Entidad–Relación | 0.25 | ✅ | Notación de Chen: general + 4 por módulo (documento, Figuras 1–5) |
+| 8 | Entidades y atributos según requerimientos | 0.25 | ✅ | Diagramas ER por módulo (Figuras 2–5) |
+| 9 | Relaciones y cardinalidades correctas | 0.25 | ✅ | 22 relaciones con cardinalidad (Figura 1) |
 | 10 | M:N resueltas con entidades asociativas | 0.25 | ✅ | `USUARIO_ROL`; detalles de compra, venta y cotización |
-| 11 | Modelo relacional con PK y FK | 0.25 | ⏳ | Data Modeler, modelo relacional |
-| 12 | Modelo físico con tipos y restricciones | 0.25 | ⏳ | Relacional con tipos + DDL |
+| 11 | Modelo relacional con PK y FK | 0.25 | ✅ | Data Modeler (Figura 6) |
+| 12 | Modelo físico con tipos y restricciones | 0.25 | ✅ | Data Modeler con tipos e índices (Figura 7) + DDL |
 | 13 | Normalización hasta 3FN | 0.50 | ✅ | Evidencia 1FN → 2FN → 3FN (cambio no guardado, incidencias como vista, catálogos) |
-| 14 | Integridad referencial y coherencia modelo–BD | 0.50 | ⏳ | Diagramas generados desde la BD real |
+| 14 | Integridad referencial y coherencia modelo–BD | 0.50 | ✅ | Relacional y físico por ingeniería inversa de `SISTEMA_VENTAS` |
 
 ### III. Implementación en Oracle — 2.00 pts
 
@@ -303,7 +303,7 @@ Leyenda: ✅ listo · ⏳ pendiente
 
 | # | Criterio | Valor | Estado | Evidencia |
 |---|---|---|---|---|
-| 52 | Documentación y modelos actualizados | 0.25 | ⏳ | Documento del proyecto |
+| 52 | Documentación y modelos actualizados | 0.25 | ✅ | Documento del proyecto (falta llenar la carátula) |
 | 53 | Script SQL completo y ejecutable | 0.25 | ✅ | `database/proyecto_sistema_ventas.sql` |
 | 54 | Demostración de la aplicación | 0.25 | ⏳ | Ensayo de defensa |
 | 55 | Explica relaciones, PK, FK y normalización | 0.25 | ⏳ | Preparar con los diagramas |
@@ -312,10 +312,10 @@ Leyenda: ✅ listo · ⏳ pendiente
 
 ### Productos a entregar
 
-1. Documento del proyecto (análisis, requerimientos, reglas, modelos) — ✅ falta pegar diagramas y llenar carátula
-2. Diagrama Entidad–Relación — ⏳
-3. Modelo Relacional — ⏳
-4. Modelo Físico — ⏳
+1. Documento del proyecto (análisis, requerimientos, reglas, modelos) — ✅ falta llenar la carátula
+2. Diagrama Entidad–Relación — ✅ (`database/diagramas/er_*.png`)
+3. Modelo Relacional — ✅ (`database/diagramas/modelo_relacional_imagen.png`)
+4. Modelo Físico — ✅ (`database/diagramas/modelo_fisico.pdf` y `modelo_fisico_ddl.sql`)
 5. Evidencia de normalización hasta 3FN — ✅ (documento, sección 3)
 6. Script SQL completo — ✅
 7. Código fuente de la aplicación — ✅
@@ -436,9 +436,9 @@ Eden Store registra compras, ventas e inventario en hojas de cálculo y document
 
 ## 8. Pendientes (plan hasta la entrega)
 
-- [ ] Importar `SISTEMA_VENTAS` en Data Modeler y generar: ER (lógico), relacional y físico; exportar a PDF/PNG en `database/diagramas/`.
+- [x] Diagramas: ER en notación de Chen (general + 4 módulos), relacional y físico de Data Modeler en `database/diagramas/`.
 - [x] Redactar la evidencia de normalización (1FN → 2FN → 3FN).
-- [x] Armar el documento del proyecto (`docs/Documento_Proyecto_Eden_Store.docx`). Falta: carátula y pegar los 3 diagramas en los recuadros amarillos.
+- [x] Armar el documento del proyecto (`docs/Documento_Proyecto_Eden_Store.docx`). Falta: llenar la carátula (marcadores amarillos).
 - [ ] Ensayar la defensa (registrar compra, vender, venta sin stock, Kardex, crear usuario, vista, procedimiento, excepción, trigger, ROLLBACK).
 - [ ] (Opcional) Despliegue en Ubuntu Server.
 
