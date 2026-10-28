@@ -68,6 +68,8 @@ app.py                 inicio de la aplicación y control de acceso
 config.example.py      plantilla de configuración (config.py no se sube)
 establecer_passwords.py
 database/              script SQL completo
+database/diagramas/    diagramas ER (notación de Chen), modelo relacional y modelo físico
+docs/                  documento del proyecto y capturas de la aplicación
 controllers/           lógica de cada pantalla (Flask Blueprints)
 models/                consultas a Oracle
 templates/             páginas HTML (Jinja2)
@@ -75,6 +77,11 @@ static/css/            estilos
 ```
 
 La aplicación sigue el patrón **Modelo–Vista–Controlador**: el SQL está solo en `models/`, la lógica de cada petición en `controllers/` y el HTML en `templates/`. Las reglas de negocio críticas (stock, caja, pagos, anulaciones) se validan en Oracle con restricciones y procedimientos almacenados.
+
+## Documentación
+
+- `docs/Documento_Proyecto_Eden_Store.docx`: análisis de requerimientos, diseño, normalización hasta 3FN, implementación, pruebas y diccionario de datos.
+- `database/diagramas/`: diagrama Entidad–Relación (general y por módulo), modelo relacional y modelo físico con su DDL.
 
 ## Respaldo
 
