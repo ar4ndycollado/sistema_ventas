@@ -293,6 +293,7 @@ h1 { font-size: 24px; margin-bottom: 8px; }
 
 /* ===== Utilidades ===== */
 .texto-derecha { text-align: right; }
+.tabla .texto-derecha { text-align: right; }   /* gana sobre ".tabla th" para alinear los títulos de columnas numéricas */
 
 .fila-inactiva td { color: var(--texto-suave); }
 

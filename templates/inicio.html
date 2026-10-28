@@ -4,5 +4,70 @@
 
 {% block contenido %}
 <h1>Bienvenido, {{ session['usuario'] }}</h1>
-<p class="subtitulo">Rol: {{ session['roles'] | join(', ') }}. Selecciona un módulo en el menú de la izquierda.</p>
+<p class="subtitulo">Rol: {{ session['roles'] | join(', ') }}. Este es el resumen del día.</p>
+
+<!-- Indicadores: cada uno aparece solo si el rol tiene acceso a ese módulo -->
+<div class="indicadores">
+    {% if ventas_hoy is not none %}
+    <div class="indicador">
+        <span>{{ 'Ventas de hoy (tienda)' if tiene_rol(['ADMINISTRADOR']) else 'Mis ventas de hoy' }}</span>
+        <strong>Q {{ '%.2f' | format(ventas_hoy.total) }}</strong>
+        <span>{{ ventas_hoy.cantidad }} {{ 'venta' if ventas_hoy.cantidad == 1 else 'ventas' }}</span>
+    </div>
+    {% endif %}
+
+    {% if tiene_permiso('caja') %}
+    <div class="indicador">
+        <span>Mi caja</span>
+        {% if apertura %}
+            <strong>{{ apertura.caja }}</strong>
+            <span class="etiqueta etiqueta-verde">Abierta desde {{ apertura.fecha_apertura }}</span>
+        {% else %}
+            <strong>Sin caja abierta</strong>
+            <a href="{{ url_for('caja.mi_caja') }}">Abrir caja</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if bajo_stock is not none %}
+    <div class="indicador">
+        <span>Productos con bajo stock</span>
+        <strong>{{ bajo_stock | length }}</strong>
+        <a href="{{ url_for('productos.lista', filtro='bajo') }}">Ver productos</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Lista de productos con bajo stock -->
+{% if bajo_stock %}
+<div class="tarjeta">
+    <h3>Productos por reabastecer</h3>
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th class="texto-derecha">Stock</th>
+                <th class="texto-derecha">Mínimo</th>
+                <th>Existencia</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in bajo_stock %}
+            <tr class="{{ 'fila-inactiva' if producto.estado == 'I' }}">
+                <td>{{ producto.nombre }}</td>
+                <td class="texto-derecha"><strong>{{ producto.stock }}</strong></td>
+                <td class="texto-derecha">{{ producto.stock_minimo }}</td>
+                <td>
+                    {% if producto.clasificacion == 'AGOTADO' %}
+                        <span class="etiqueta etiqueta-roja">Agotado</span>
+                    {% else %}
+                        <span class="etiqueta etiqueta-amarilla">Stock bajo</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
 {% endblock %}

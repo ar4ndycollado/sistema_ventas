@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar sesión</title>
+    <title>Iniciar sesión · Eden Store</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
 </head>
 <body class="pagina-login">
     <div class="tarjeta-login">
-        <h1>Sistema de Ventas</h1>
-        <p class="subtitulo">Ingrese sus credenciales</p>
+        <h1>Eden Store</h1>
+        <p class="subtitulo">Sistema de Ventas</p>
 
         {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
             <div class="alerta alerta-{{ categoria }}">{{ mensaje }}</div>

@@ -114,7 +114,7 @@
         {% for metodo in por_metodo %}
         <div class="fila-barra">
             <div class="fila-barra-texto">
-                <span>{{ metodo.metodo }} ({{ metodo.pagos }} pagos)</span>
+                <span>{{ metodo.metodo }} ({{ metodo.pagos }} {{ 'pago' if metodo.pagos == 1 else 'pagos' }})</span>
                 <strong>Q {{ '%.2f' | format(metodo.total) }}</strong>
             </div>
             <div class="barra"><div class="barra-relleno" style="width: {{ metodo.porcentaje }}%;"></div></div>

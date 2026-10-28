@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block titulo %}Sistema de Ventas{% endblock %}</title>
+    <title>{% block titulo %}Sistema de Ventas{% endblock %} · Eden Store</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
 </head>
 <body>
     <aside class="menu">
-        <h2 class="logo">Sistema de Ventas</h2>
+        <h2 class="logo">Eden Store</h2>
 
         <div class="usuario-info">
             <strong>{{ session['usuario'] }}</strong>
