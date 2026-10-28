@@ -1,2 +1,5 @@
 venv/
 __pycache__/
+
+# Contiene contraseñas: cada quien lo crea a partir de config.example.py
+config.py

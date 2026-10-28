@@ -4,20 +4,13 @@
 
 from werkzeug.security import generate_password_hash
 from models.conexion import obtener_conexion
+import config
 
-# Lista de (usuario, contraseña en texto normal)
-usuarios = [
-    ("admin_marta", "admin123"),
-    ("cajero1", "cajero123"),
-    ("vendedor2", "vendedor123"),
-    ("bodega_lab", "bodega123"),
-    ("usuario_inactivo", "inactivo123"),
-]
-
+# La lista de (usuario, contraseña) está en config.py, que no se sube a GitHub
 conexion = obtener_conexion()
 cursor = conexion.cursor()
 
-for nombre, password in usuarios:
+for nombre, password in config.PASSWORDS_PRUEBA:
     password_encriptada = generate_password_hash(password)
 
     cursor.execute(
