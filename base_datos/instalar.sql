@@ -11,3 +11,7 @@
 @@07_procedimientos.sql
 @@08_triggers.sql
 @@09_jobs.sql
+@@10_datos_iniciales.sql
+
+-- Después, asignar las contraseñas desde la carpeta del proyecto:
+--   python establecer_passwords.py
