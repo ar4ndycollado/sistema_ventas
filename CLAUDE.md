@@ -47,6 +47,7 @@ sistema_ventas/
 ├── app.py                    # inicio, registro de Blueprints, control de acceso (before_request)
 ├── config.py                 # conexión y datos del negocio (NO se sube a GitHub)
 ├── config.example.py         # plantilla de config.py sin contraseñas
+├── README.md               # descripción e instalación para quien revise el proyecto
 ├── requirements.txt
 ├── establecer_passwords.py   # asigna contraseñas cifradas a los usuarios de prueba
 ├── database/
