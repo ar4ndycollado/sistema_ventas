@@ -1,4 +1,4 @@
-# Sistema de Ventas "TecnoMax" — Proyecto Final Base de Datos I
+# Sistema de Ventas "Eden Store" — Proyecto Final Base de Datos I
 
 Contexto del proyecto para asistentes de IA y para el equipo. Mantener este archivo actualizado.
 
@@ -9,7 +9,7 @@ Contexto del proyecto para asistentes de IA y para el equipo. Mantener este arch
 - **Curso:** Base de Datos I — Proyecto final individual (15 puntos).
 - **Entrega:** sábado 31 de octubre de 2026.
 - **Objetivo:** Sistema de Ventas con base de datos Oracle normalizada (3FN), íntegra y segura, más un prototipo web funcional conectado a Oracle.
-- **Negocio ficticio:** TecnoMax, venta de equipo de cómputo y accesorios en Guatemala (moneda: quetzales, Q).
+- **Negocio:** Eden Store, venta de equipo de cómputo y accesorios en Guatemala (moneda: quetzales, Q).
 - **Idioma:** todo en español (código, comentarios, interfaz y documentación).
 
 ### Preferencias de trabajo (importante)
@@ -325,7 +325,7 @@ Leyenda: ✅ listo · ⏳ pendiente
 
 ### 7.1 Descripción del problema
 
-TecnoMax registra compras, ventas e inventario en hojas de cálculo y documentos separados. Esto provoca: inventario descuadrado; ventas de productos sin existencia; falta de trazabilidad sobre quién y cuándo cambió existencias o precios; cotizaciones confundidas con ventas; ausencia de control formal de caja (faltantes y sobrantes sin responsable); anulaciones sin autorización ni registro; y acceso sin control a la información.
+Eden Store registra compras, ventas e inventario en hojas de cálculo y documentos separados. Esto provoca: inventario descuadrado; ventas de productos sin existencia; falta de trazabilidad sobre quién y cuándo cambió existencias o precios; cotizaciones confundidas con ventas; ausencia de control formal de caja (faltantes y sobrantes sin responsable); anulaciones sin autorización ni registro; y acceso sin control a la información.
 
 ### 7.2 Objetivos
 

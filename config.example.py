@@ -12,7 +12,7 @@ SECRET_KEY = "escriba_aqui_una_clave_secreta"
 
 # Datos que aparecen en el recibo
 NEGOCIO = {
-    "nombre": "TecnoMax",
+    "nombre": "Eden Store",
     "direccion": "Dirección del negocio",
     "telefono": "00000000",
     "nit": "0000000-0"
