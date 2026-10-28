@@ -53,6 +53,9 @@ sistema_ventas/
 ├── database/
 │   ├── proyecto_sistema_ventas.sql   # script completo (estructura, PL/SQL, datos, pruebas)
 │   └── diagramas/                    # ER, relacional y físico (Data Modeler)
+├── docs/
+│   ├── Documento_Proyecto_Eden_Store.docx   # documento del proyecto (entregar en PDF)
+│   └── capturas/                     # capturas de la app usadas en el documento
 ├── controllers/
 │   ├── seguridad.py          # PERMISOS por módulo, tiene_permiso(), tiene_rol()
 │   ├── auth_controller.py    # login / logout
@@ -214,12 +217,12 @@ Leyenda: ✅ listo · ⏳ pendiente
 
 | # | Criterio | Valor | Estado | Evidencia |
 |---|---|---|---|---|
-| 1 | Descripción clara del problema | 0.25 | ⏳ | Documento, sección 1.1 (borrador en la sección 7 de este archivo) |
-| 2 | Objetivo general y alcance | 0.25 | ⏳ | Documento, secciones 1.2 y 1.3 |
-| 3 | Actores o usuarios | 0.25 | ⏳ | Documento, sección 1.4 |
-| 4 | Requerimientos funcionales | 0.25 | ⏳ | Documento, sección 1.5 |
-| 5 | Reglas del negocio | 0.25 | ⏳ | Documento, sección 1.7 |
-| 6 | Requerimientos corresponden con lo implementado | 0.25 | ⏳ | Tabla RF → objeto/pantalla |
+| 1 | Descripción clara del problema | 0.25 | ✅ | Documento, sección 1.1 |
+| 2 | Objetivo general y alcance | 0.25 | ✅ | Documento, secciones 1.2 y 1.3 |
+| 3 | Actores o usuarios | 0.25 | ✅ | Documento, sección 1.4 |
+| 4 | Requerimientos funcionales | 0.25 | ✅ | Documento, sección 1.5 |
+| 5 | Reglas del negocio | 0.25 | ✅ | Documento, sección 1.7 |
+| 6 | Requerimientos corresponden con lo implementado | 0.25 | ✅ | Documento, sección 1.8 (RF → objeto → pantalla → evidencia) |
 
 ### II. Diseño de la base de datos — 2.50 pts
 
@@ -228,10 +231,10 @@ Leyenda: ✅ listo · ⏳ pendiente
 | 7 | Diagrama Entidad–Relación | 0.25 | ⏳ | Data Modeler, modelo lógico |
 | 8 | Entidades y atributos según requerimientos | 0.25 | ⏳ | Diagrama ER |
 | 9 | Relaciones y cardinalidades correctas | 0.25 | ⏳ | Diagrama ER (notación pata de gallo) |
-| 10 | M:N resueltas con entidades asociativas | 0.25 | ⏳ | `USUARIO_ROL`; detalles de compra, venta y cotización |
+| 10 | M:N resueltas con entidades asociativas | 0.25 | ✅ | `USUARIO_ROL`; detalles de compra, venta y cotización |
 | 11 | Modelo relacional con PK y FK | 0.25 | ⏳ | Data Modeler, modelo relacional |
 | 12 | Modelo físico con tipos y restricciones | 0.25 | ⏳ | Relacional con tipos + DDL |
-| 13 | Normalización hasta 3FN | 0.50 | ⏳ | Evidencia 1FN → 2FN → 3FN (cambio no guardado, incidencias como vista, catálogos) |
+| 13 | Normalización hasta 3FN | 0.50 | ✅ | Evidencia 1FN → 2FN → 3FN (cambio no guardado, incidencias como vista, catálogos) |
 | 14 | Integridad referencial y coherencia modelo–BD | 0.50 | ⏳ | Diagramas generados desde la BD real |
 
 ### III. Implementación en Oracle — 2.00 pts
@@ -309,11 +312,11 @@ Leyenda: ✅ listo · ⏳ pendiente
 
 ### Productos a entregar
 
-1. Documento del proyecto (análisis, requerimientos, reglas, modelos) — ⏳
+1. Documento del proyecto (análisis, requerimientos, reglas, modelos) — ✅ falta pegar diagramas y llenar carátula
 2. Diagrama Entidad–Relación — ⏳
 3. Modelo Relacional — ⏳
 4. Modelo Físico — ⏳
-5. Evidencia de normalización hasta 3FN — ⏳
+5. Evidencia de normalización hasta 3FN — ✅ (documento, sección 3)
 6. Script SQL completo — ✅
 7. Código fuente de la aplicación — ✅
 8. Base de datos con datos de prueba — ✅
@@ -434,8 +437,8 @@ Eden Store registra compras, ventas e inventario en hojas de cálculo y document
 ## 8. Pendientes (plan hasta la entrega)
 
 - [ ] Importar `SISTEMA_VENTAS` en Data Modeler y generar: ER (lógico), relacional y físico; exportar a PDF/PNG en `database/diagramas/`.
-- [ ] Redactar la evidencia de normalización (1FN → 2FN → 3FN).
-- [ ] Armar el documento del proyecto (secciones: análisis, diseño, implementación, seguridad, prototipo, pruebas, instalación, conclusiones).
+- [x] Redactar la evidencia de normalización (1FN → 2FN → 3FN).
+- [x] Armar el documento del proyecto (`docs/Documento_Proyecto_Eden_Store.docx`). Falta: carátula y pegar los 3 diagramas en los recuadros amarillos.
 - [ ] Ensayar la defensa (registrar compra, vender, venta sin stock, Kardex, crear usuario, vista, procedimiento, excepción, trigger, ROLLBACK).
 - [ ] (Opcional) Despliegue en Ubuntu Server.
 
