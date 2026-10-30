@@ -526,4 +526,52 @@ h1 { font-size: 24px; margin-bottom: 8px; }
 
 .boton-peligro-lleno:hover { background: #b91c1c; }
 
-/* =====
+/* ===== Diseño responsive (celulares y tablets) ===== */
+
+/* Permite que el contenido se encoja; las tablas anchas se desplazan dentro de su tarjeta */
+.contenido { min-width: 0; }
+
+/* Las dos columnas de reportes no deben pasar del ancho de la pantalla */
+.rejilla-2 { grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); }
+
+@media (max-width: 768px) {
+    /* El menú pasa de la izquierda a la parte de arriba */
+    body { flex-direction: column; }
+
+    .menu {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--borde);
+        padding: 12px 16px;
+    }
+
+    .logo { margin-bottom: 8px; }
+    .usuario-info { margin-bottom: 8px; }
+
+    /* Los enlaces del menú quedan en una fila que se desliza con el dedo */
+    .menu nav {
+        display: flex;
+        gap: 4px;
+        overflow-x: auto;
+        margin-bottom: 4px;
+    }
+
+    .menu nav a { white-space: nowrap; margin-bottom: 0; }
+
+    .contenido { padding: 16px; }
+
+    h1 { font-size: 20px; }
+
+    /* Encabezados, filtros y botones se acomodan en varias líneas */
+    .encabezado { flex-wrap: wrap; }
+    .filtros { flex-wrap: wrap; }
+    .botones-form { flex-wrap: wrap; }
+
+    /* Campos de formulario en una sola columna */
+    .fila-campos,
+    .opciones-check { grid-template-columns: 1fr; }
+
+    .campo-ancho { min-width: 100%; }
+    .tarjeta-formulario { max-width: 100%; }
+    .tarjeta { padding: 14px; }
+}
