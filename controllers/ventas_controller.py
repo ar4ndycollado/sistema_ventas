@@ -1,5 +1,12 @@
 # controllers/ventas_controller.py
-# CONTROLADOR: ventas con varios productos y varios métodos de pago
+# CONTROLADOR: ventas con varios productos y varios métodos de pago.
+# Flujo de una venta:
+#   1) Se agregan productos al carrito y pagos a la lista (ambos en la sesión).
+#   2) Al presionar "Registrar", venta_model.registrar() guarda todo en Oracle
+#      en una sola transacción (encabezado, detalles, pagos, stock, Kardex y caja).
+#   3) Si algo falla en Oracle (por ejemplo, stock insuficiente), se hace
+#      ROLLBACK y no queda nada a medias; el carrito se conserva para corregir.
+# También incluye el detalle, el recibo y la anulación con autorización.
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import oracledb
@@ -16,18 +23,21 @@ ventas_bp = Blueprint("ventas", __name__, url_prefix="/ventas")
 # ===== Datos de la venta en curso (guardados en la sesión) =====
 
 def obtener_carrito():
+    """Productos de la venta en curso (se crea vacío la primera vez)."""
     if "carrito_venta" not in session:
         session["carrito_venta"] = []
     return session["carrito_venta"]
 
 
 def obtener_pagos():
+    """Pagos agregados a la venta en curso (se crea vacía la primera vez)."""
     if "pagos_venta" not in session:
         session["pagos_venta"] = []
     return session["pagos_venta"]
 
 
 def calcular_total(carrito):
+    """Suma de los subtotales. round(…, 2) evita decimales raros de float (ej. 674.9999)."""
     total = 0
     for linea in carrito:
         total = total + linea["subtotal"]
@@ -35,6 +45,7 @@ def calcular_total(carrito):
 
 
 def calcular_pagado(pagos):
+    """Suma de los montos de todos los pagos agregados."""
     pagado = 0
     for pago in pagos:
         pagado = pagado + pago["monto"]
@@ -42,6 +53,7 @@ def calcular_pagado(pagos):
 
 
 def limpiar_venta():
+    """Borra de la sesión todo lo de la venta en curso (al registrar o cancelar)."""
     session.pop("carrito_venta", None)
     session.pop("pagos_venta", None)
     session.pop("cotizacion_venta", None)
@@ -72,7 +84,9 @@ def nueva():
         productos=producto_model.listar_activos(),
         clientes=cliente_model.listar(),
         metodos=venta_model.listar_metodos_pago(),
+        # Si el usuario no tiene caja abierta, la pantalla avisa que no puede vender
         apertura=caja_model.obtener_apertura_activa(session["id_usuario"]),
+        # Si la venta viene de una cotización, aquí están sus datos (si no, None)
         cotizacion=session.get("cotizacion_venta")
     )
 
@@ -81,6 +95,7 @@ def nueva():
 
 @ventas_bp.route("/agregar", methods=["POST"])
 def agregar():
+    """Agrega un producto al carrito revisando el stock disponible."""
     try:
         id_producto = int(request.form["id_producto"])
         cantidad = int(request.form["cantidad"])
@@ -99,20 +114,26 @@ def agregar():
 
     carrito = obtener_carrito()
 
+    # Buscar si el producto ya está en el carrito
     linea_existente = None
     for linea in carrito:
         if linea["id_producto"] == id_producto:
             linea_existente = linea
 
+    # La cantidad a revisar es lo que ya había en el carrito + lo nuevo
     cantidad_total = cantidad
     if linea_existente is not None:
         cantidad_total = linea_existente["cantidad"] + cantidad
 
+    # Primera revisión de stock, solo para avisar pronto al usuario.
+    # La revisión definitiva la hace SP_AGREGAR_DETALLE_VENTA al registrar,
+    # porque otro cajero pudo vender el mismo producto mientras tanto.
     if cantidad_total > producto["stock"]:
         flash("Stock insuficiente de " + producto["nombre"] + ". Disponible: " +
             str(producto["stock"]) + ", solicitado: " + str(cantidad_total) + ".", "error")
         return redirect(url_for("ventas.nueva"))
 
+    # El precio sale del catálogo; el usuario no puede escribirlo (RN-11)
     precio = producto["precio_venta"]
 
     if linea_existente is not None:
@@ -127,6 +148,8 @@ def agregar():
             "subtotal": round(cantidad * precio, 2)
         })
 
+    # Se modificó una lista DENTRO de la sesión: hay que avisarle a Flask
+    # para que guarde el cambio en la cookie
     session.modified = True
     return redirect(url_for("ventas.nueva"))
 
@@ -144,6 +167,7 @@ def quitar(indice):
 
 @ventas_bp.route("/agregar-pago", methods=["POST"])
 def agregar_pago():
+    """Agrega un pago. Una venta puede pagarse con varios (ej. tarjeta + efectivo)."""
     try:
         id_metodo = int(request.form["id_metodo"])
         monto = round(float(request.form["monto"]), 2)
@@ -161,6 +185,7 @@ def agregar_pago():
         flash("El método de pago no es válido.", "error")
         return redirect(url_for("ventas.nueva"))
 
+    # Saldo pendiente = total de la venta - lo que ya se pagó
     pagos = obtener_pagos()
     pendiente = round(calcular_total(obtener_carrito()) - calcular_pagado(pagos), 2)
 
@@ -176,6 +201,9 @@ def agregar_pago():
     monto_recibido = None
     cambio = None
 
+    # Reglas por método de pago (RN-13):
+    # - Efectivo: sin referencia; puede registrar cuánto entregó el cliente para dar cambio.
+    # - Tarjeta y transferencia: exigen número de autorización o referencia.
     if metodo["es_efectivo"]:
         referencia = ""   # el efectivo no lleva referencia
         recibido_texto = request.form.get("monto_recibido", "").strip()
@@ -188,6 +216,7 @@ def agregar_pago():
             if monto_recibido < monto:
                 flash("El efectivo recibido no cubre el monto del pago.", "error")
                 return redirect(url_for("ventas.nueva"))
+            # Ej.: paga Q300 en efectivo, entrega Q500 → cambio Q200
             cambio = round(monto_recibido - monto, 2)
 
     elif metodo["requiere_referencia"] and referencia == "":
@@ -198,7 +227,7 @@ def agregar_pago():
         "id_metodo": id_metodo,
         "metodo": metodo["nombre"],
         "monto": monto,
-        "referencia": referencia if referencia != "" else None,
+        "referencia": referencia if referencia != "" else None,   # vacío → NULL en Oracle
         "monto_recibido": monto_recibido,
         "cambio": cambio
     })
@@ -246,6 +275,8 @@ def registrar():
         id_cliente = int(id_cliente_texto)
         id_cotizacion = None
 
+    # Los pagos deben sumar exactamente el total (RN-12).
+    # Oracle lo vuelve a comprobar en SP_FINALIZAR_VENTA.
     total = calcular_total(carrito)
     pagado = calcular_pagado(pagos)
 
@@ -259,6 +290,8 @@ def registrar():
         flash("Venta #" + str(id_venta) + " registrada. Se actualizó el stock, el Kardex y la caja.", "exito")
         return redirect(url_for("ventas.detalle", id_venta=id_venta))
     except oracledb.DatabaseError as e:
+        # El modelo ya hizo ROLLBACK; el carrito sigue en la sesión para corregir.
+        # Ej.: "Stock insuficiente de Proyector Full HD. Disponible: 2" (ORA-20004)
         flash("La venta NO se registró: " + obtener_mensaje_error(e), "error")
         return redirect(url_for("ventas.nueva"))
 
@@ -277,9 +310,9 @@ def detalle(id_venta):
         pagos=venta_model.obtener_pagos(id_venta)
     )
 
-# ===== Anulación y recibo =====
-
 # ===== Anulación con autorización de administrador =====
+# Un cajero o vendedor puede solicitar la anulación, pero necesita que un
+# ADMINISTRADOR escriba su usuario y contraseña en el formulario (RN-22).
 
 def validar_autorizador():
     """Si el usuario conectado es ADMINISTRADOR, se autoriza a sí mismo.
@@ -289,6 +322,7 @@ def validar_autorizador():
     if tiene_rol(["ADMINISTRADOR"]):
         return session["id_usuario"]
 
+    # Las mismas revisiones del login: existe, está activo, contraseña correcta y es ADMINISTRADOR
     nombre = request.form.get("autoriza_usuario", "").strip()
     password = request.form.get("autoriza_password", "")
 
@@ -322,6 +356,8 @@ def anular(id_venta):
         return redirect(url_for("ventas.detalle", id_venta=id_venta))
 
     try:
+        # Se guarda quién solicitó (usuario conectado) y quién autorizó (administrador).
+        # Oracle rechaza la anulación si la caja de esa venta ya se cerró (RN-22).
         venta_model.anular(id_venta, session["id_usuario"], id_autoriza, motivo)
         flash("Venta #" + str(id_venta) + " anulada. Se devolvió el stock y se ajustó la caja.", "exito")
     except oracledb.DatabaseError as e:
@@ -332,6 +368,8 @@ def anular(id_venta):
 
 @ventas_bp.route("/recibo/<int:id_venta>")
 def recibo(id_venta):
+    """Comprobante imprimible (el navegador permite imprimirlo o guardarlo en PDF).
+    Los datos del negocio (nombre, NIT, dirección) vienen de config.NEGOCIO."""
     venta = venta_model.obtener(id_venta)
     if venta is None:
         flash("La venta no existe.", "error")

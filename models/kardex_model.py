@@ -9,7 +9,9 @@ def listar(id_producto=None, tipo=None):
     movimientos = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
-            # JOIN entre KARDEX, PRODUCTOS y USUARIO
+            # JOIN entre KARDEX, PRODUCTOS y USUARIO.
+            # "(:id_producto IS NULL OR ...)" hace el filtro opcional:
+            # si llega None, la condición siempre es verdadera y trae todo.
             cursor.execute("""
                 SELECT k.id_kardex,
                     TO_CHAR(k.fecha, 'DD/MM/YYYY HH24:MI'),
@@ -47,6 +49,7 @@ def listar(id_producto=None, tipo=None):
 
 def resumen_por_tipo():
     """Cantidad de movimientos y unidades por tipo (ENTRADA / SALIDA)."""
+    # Se inicia en cero por si todavía no hay movimientos de algún tipo
     resumen = {"ENTRADA": {"movimientos": 0, "unidades": 0},
             "SALIDA": {"movimientos": 0, "unidades": 0}}
     with obtener_conexion() as conexion:
@@ -67,6 +70,8 @@ def resumen_producto(id_producto):
     """Totales de entradas y salidas de un producto, y su stock actual."""
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
+            # LEFT JOIN para que también salga un producto sin movimientos (totales en 0).
+            # Permite comparar el total de entradas y salidas con el stock actual.
             cursor.execute("""
                 SELECT p.nombre,
                     p.stock,

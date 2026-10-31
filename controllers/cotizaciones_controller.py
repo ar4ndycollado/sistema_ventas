@@ -1,5 +1,8 @@
 # controllers/cotizaciones_controller.py
-# CONTROLADOR: cotizaciones (carrito) y conversión a venta
+# CONTROLADOR: cotizaciones (carrito) y conversión a venta.
+# Una cotización es un presupuesto: NO cambia el stock ni el Kardex (RN-15).
+# Estados: A = Abierta, C = Caducada (venció), F = Facturada (ya se vendió).
+# Solo una cotización abierta se puede convertir en venta, y una sola vez.
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import oracledb
@@ -11,12 +14,14 @@ cotizaciones_bp = Blueprint("cotizaciones", __name__, url_prefix="/cotizaciones"
 
 
 def obtener_carrito():
+    """Productos de la cotización en curso, guardados en la sesión."""
     if "carrito_cotizacion" not in session:
         session["carrito_cotizacion"] = []
     return session["carrito_cotizacion"]
 
 
 def calcular_total(carrito):
+    """Suma de los subtotales del carrito (para mostrar en pantalla)."""
     total = 0
     for linea in carrito:
         total = total + linea["subtotal"]
@@ -25,7 +30,8 @@ def calcular_total(carrito):
 
 @cotizaciones_bp.route("/")
 def lista():
-    # Antes de mostrar la lista, marcar como caducadas las que ya vencieron
+    # Antes de mostrar la lista, marcar como caducadas las que ya vencieron.
+    # (El job JOB_CADUCAR_COTIZACIONES también lo hace cada noche a las 00:05.)
     cotizacion_model.caducar_vencidas()
     cotizaciones = cotizacion_model.listar()
     return render_template("cotizaciones/lista.html", cotizaciones=cotizaciones)
@@ -64,6 +70,8 @@ def agregar():
     carrito = obtener_carrito()
     precio = producto["precio_venta"]
 
+    # No se revisa el stock: cotizar no compromete existencias.
+    # Si el producto ya está en el carrito, solo se suma la cantidad.
     encontrado = False
     for linea in carrito:
         if linea["id_producto"] == id_producto:
@@ -113,10 +121,11 @@ def registrar():
         flash("Seleccione el cliente.", "error")
         return redirect(url_for("cotizaciones.nueva"))
 
+    # Días de vigencia: la fecha de vencimiento será hoy + dias
     try:
         dias = int(request.form.get("dias_validez", "15"))
     except ValueError:
-        dias = 0
+        dias = 0   # valor inválido → lo rechaza la validación de abajo
 
     if dias <= 0 or dias > 90:
         flash("Los días de validez deben estar entre 1 y 90.", "error")
@@ -130,6 +139,7 @@ def registrar():
     except oracledb.DatabaseError as e:
         flash("La cotización NO se registró: " + obtener_mensaje_error(e), "error")
     except ValueError as e:
+        # Error lanzado por el modelo cuando un producto se desactivó mientras se cotizaba
         flash("La cotización NO se registró: " + str(e), "error")
 
     return redirect(url_for("cotizaciones.nueva"))
@@ -148,10 +158,13 @@ def detalle(id_cotizacion):
 
 @cotizaciones_bp.route("/convertir/<int:id_cotizacion>", methods=["POST"])
 def convertir(id_cotizacion):
+    """Carga la cotización en el carrito de VENTAS. La venta todavía no se guarda:
+    el usuario debe agregar los pagos y registrarla en el módulo de ventas."""
     if not tiene_permiso("ventas"):
         flash("Su rol no puede registrar ventas.", "error")
         return redirect(url_for("cotizaciones.detalle", id_cotizacion=id_cotizacion))
     
+    # Actualizar estados primero, por si esta cotización venció hoy
     cotizacion_model.caducar_vencidas()
 
     cotizacion = cotizacion_model.obtener(id_cotizacion)
@@ -159,6 +172,7 @@ def convertir(id_cotizacion):
         flash("La cotización no existe.", "error")
         return redirect(url_for("cotizaciones.lista"))
 
+    # Caducada o ya facturada: no se puede vender
     if cotizacion["estado"] != "A":
         flash("Solo se pueden convertir cotizaciones abiertas.", "error")
         return redirect(url_for("cotizaciones.detalle", id_cotizacion=id_cotizacion))
@@ -176,6 +190,9 @@ def convertir(id_cotizacion):
             "subtotal": round(linea["cantidad"] * precio, 2)
         })
 
+    # Reemplaza cualquier venta que estuviera en curso.
+    # "cotizacion_venta" le indica a ventas_controller de qué cotización viene
+    # (fija el cliente y envía id_cotizacion a SP_CREAR_VENTA, que la marca como F).
     session["carrito_venta"] = carrito
     session["pagos_venta"] = []
     session["cotizacion_venta"] = {
