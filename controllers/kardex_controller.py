@@ -1,5 +1,7 @@
 # controllers/kardex_controller.py
-# CONTROLADOR: consulta del Kardex
+# CONTROLADOR: consulta del Kardex (solo lectura).
+# Los movimientos los crean los procedimientos de compra, venta y anulación;
+# aquí solo se muestran con filtros por producto y por tipo.
 
 from flask import Blueprint, render_template, request
 from models import kardex_model, producto_model
@@ -13,6 +15,7 @@ def lista():
     id_producto_texto = request.args.get("id_producto", "")
     tipo = request.args.get("tipo", "")
 
+    # Un filtro vacío o inválido se convierte en None = "sin filtro"
     id_producto = None
     if id_producto_texto.isdigit():
         id_producto = int(id_producto_texto)

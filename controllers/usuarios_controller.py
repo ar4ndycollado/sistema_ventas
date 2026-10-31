@@ -1,5 +1,8 @@
 # controllers/usuarios_controller.py
-# CONTROLADOR: gestión de usuarios y roles (solo ADMINISTRADOR)
+# CONTROLADOR: gestión de usuarios y roles (solo ADMINISTRADOR).
+# Un usuario puede tener varios roles (tabla asociativa USUARIO_ROL, RN-02).
+# Los usuarios no se eliminan: se desactivan, porque tienen ventas, cajas y
+# otros registros que los referencian (RN-08).
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash
@@ -11,6 +14,7 @@ usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")
 
 
 def leer_formulario():
+    """Lee el formulario. "roles" llega como una lista con los IDs de las casillas marcadas."""
     ids_roles = []
     for id_texto in request.form.getlist("roles"):   # casillas marcadas
         ids_roles.append(int(id_texto))
@@ -24,6 +28,7 @@ def leer_formulario():
 
 
 def validar(datos, es_nuevo):
+    """Devuelve la lista de errores. es_nuevo indica si se está creando o editando."""
     errores = []
 
     if datos["usuario"] == "":
@@ -45,6 +50,7 @@ def validar(datos, es_nuevo):
 
 
 def id_rol_administrador(roles):
+    """Busca en el catálogo de roles el ID del rol ADMINISTRADOR."""
     for rol in roles:
         if rol["nombre_rol"] == "ADMINISTRADOR":
             return rol["id_rol"]
@@ -73,6 +79,7 @@ def nuevo():
         return render_template("usuarios/formulario.html", usuario=datos, roles=roles, es_nuevo=True)
 
     try:
+        # La contraseña se cifra aquí (hash); Oracle nunca recibe el texto original
         usuario_model.registrar(datos["usuario"], generate_password_hash(datos["password"]), datos["roles"])
         flash("Usuario " + datos["usuario"] + " creado correctamente.", "exito")
         return redirect(url_for("usuarios.lista"))
@@ -97,6 +104,7 @@ def editar(id_usuario):
     errores = validar(datos, False)
 
     # Un administrador no puede quitarse a sí mismo el rol de administrador
+    # (evita que el sistema se quede sin nadie que lo administre)
     if id_usuario == session["id_usuario"] and id_rol_administrador(roles) not in datos["roles"]:
         errores.append("No puede quitarse a sí mismo el rol de administrador.")
 
@@ -105,11 +113,14 @@ def editar(id_usuario):
             flash(error, "error")
         return render_template("usuarios/formulario.html", usuario=datos, roles=roles, es_nuevo=False)
 
+    # Contraseña vacía al editar = conservar la actual (None le indica eso al modelo)
     password_encriptada = None
     if datos["password"] != "":
         password_encriptada = generate_password_hash(datos["password"])
 
     try:
+        # Los roles se guardan en la sesión al iniciar sesión; por eso el
+        # cambio se nota hasta que el usuario vuelva a entrar
         usuario_model.actualizar(id_usuario, datos["usuario"], password_encriptada, datos["roles"])
         flash("Usuario actualizado. Los cambios de rol se aplican la próxima vez que inicie sesión.", "exito")
         return redirect(url_for("usuarios.lista"))
@@ -125,6 +136,7 @@ def cambiar_estado(id_usuario):
         flash("El usuario no existe.", "error")
         return redirect(url_for("usuarios.lista"))
 
+    # Para desactivar se revisa: que no sea uno mismo y que no tenga una caja abierta
     if usuario["estado"] == "A":
         if id_usuario == session["id_usuario"]:
             flash("No puede desactivar su propio usuario.", "error")

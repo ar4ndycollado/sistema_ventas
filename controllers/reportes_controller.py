@@ -1,5 +1,7 @@
 # controllers/reportes_controller.py
-# CONTROLADOR: reportes del sistema
+# CONTROLADOR: reportes del sistema (solo ADMINISTRADOR).
+# Junta en una sola página los resultados de reporte_model: indicadores,
+# inventario, clientes, productos, usuarios, meses y métodos de pago.
 
 from flask import Blueprint, render_template, request
 from models import reporte_model
@@ -8,12 +10,15 @@ reportes_bp = Blueprint("reportes", __name__, url_prefix="/reportes")
 
 
 def agregar_porcentajes(lista, campo):
-    """Calcula el ancho de las barras: el valor más alto ocupa el 100%."""
+    """Calcula el ancho de las barras: el valor más alto ocupa el 100%.
+    Agrega a cada elemento la llave "porcentaje", que la plantilla usa como ancho."""
+    # 1) Encontrar el valor más alto
     maximo = 0
     for elemento in lista:
         if elemento[campo] > maximo:
             maximo = elemento[campo]
 
+    # 2) Calcular el porcentaje de cada uno respecto al máximo (evitando dividir entre 0)
     for elemento in lista:
         if maximo > 0:
             elemento["porcentaje"] = round(elemento[campo] * 100 / maximo)
@@ -23,7 +28,8 @@ def agregar_porcentajes(lista, campo):
 
 @reportes_bp.route("/")
 def inicio():
-    # Monto mínimo para el reporte con HAVING (por defecto Q500)
+    # Monto mínimo para el reporte con HAVING (por defecto Q500).
+    # Llega en la URL: /reportes/?monto_minimo=1000
     try:
         monto_minimo = float(request.args.get("monto_minimo", "500"))
     except ValueError:

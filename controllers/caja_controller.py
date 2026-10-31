@@ -1,5 +1,12 @@
 # controllers/caja_controller.py
-# CONTROLADOR: apertura, cierre e historial de caja
+# CONTROLADOR: apertura, cierre e historial de caja.
+# Ciclo de una caja:
+#   1) El usuario la abre con un monto inicial (SP_ABRIR_CAJA).
+#   2) Cada venta en efectivo suma al monto esperado.
+#   3) Al cerrar escribe lo que contó; Oracle calcula la diferencia
+#      (contado - esperado). Si falta dinero, el trigger TRG_VALE_FALTANTE
+#      genera un vale de descuento.
+# También incluye el catálogo de cajas, las incidencias y los vales (solo ADMINISTRADOR).
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import oracledb
@@ -24,6 +31,7 @@ def leer_monto(nombre_campo):
 
 @caja_bp.route("/")
 def mi_caja():
+    # Una sola pantalla con dos versiones, según si el usuario tiene caja abierta
     apertura = caja_model.obtener_apertura_activa(session["id_usuario"])
 
     # Sin caja abierta: mostrar el formulario de apertura
@@ -49,6 +57,8 @@ def abrir():
         flash("Ingrese un monto inicial válido (cero o mayor).", "error")
         return redirect(url_for("caja.mi_caja"))
 
+    # Oracle rechaza la apertura si el usuario ya tiene otra caja abierta
+    # o si esa caja ya la tiene abierta otra persona (RN-17)
     try:
         id_apertura = caja_model.abrir(int(id_caja), session["id_usuario"], monto_inicial)
         flash("Caja abierta correctamente (apertura #" + str(id_apertura) + ").", "exito")
@@ -60,6 +70,7 @@ def abrir():
 
 @caja_bp.route("/cerrar", methods=["POST"])
 def cerrar():
+    # Solo se cierra la caja que abrió el propio usuario (RN-18)
     apertura = caja_model.obtener_apertura_activa(session["id_usuario"])
     if apertura is None:
         flash("No tiene una caja abierta.", "error")
@@ -70,11 +81,14 @@ def cerrar():
         flash("Ingrese un monto contado válido (cero o mayor).", "error")
         return redirect(url_for("caja.mi_caja"))
 
+    # Observación opcional (ej. justificar un faltante); vacía se guarda como NULL
     observacion = request.form.get("observacion", "").strip()
     if observacion == "":
         observacion = None
 
     try:
+        # SP_CERRAR_CAJA calcula esperado = inicial + efectivo de ventas activas,
+        # y diferencia = contado - esperado (negativa = faltante)
         caja_model.cerrar(apertura["id_apertura"], session["id_usuario"], monto_contado, observacion)
         flash("Caja cerrada correctamente.", "exito")
         return redirect(url_for("caja.cierre", id_apertura=apertura["id_apertura"]))
@@ -85,6 +99,7 @@ def cerrar():
 
 @caja_bp.route("/cierre/<int:id_apertura>")
 def cierre(id_apertura):
+    """Resumen de una apertura: montos, diferencia y ventas realizadas en ella."""
     resumen = caja_model.resumen_apertura(id_apertura)
 
     if resumen is None:
@@ -113,6 +128,8 @@ def historial():
 
 @caja_bp.route("/cajas")
 def cajas():
+    # Cajeros y vendedores entran al módulo Caja (PERMISOS), pero esta
+    # sección se protege con tiene_rol() porque es solo del administrador
     if not tiene_rol(["ADMINISTRADOR"]):
         flash("Solo el administrador puede gestionar las cajas.", "error")
         return redirect(url_for("caja.mi_caja"))
@@ -143,6 +160,7 @@ def estado_caja(id_caja):
     if not tiene_rol(["ADMINISTRADOR"]):
         return redirect(url_for("caja.mi_caja"))
 
+    # Buscar la caja en el catálogo (también trae quién la tiene abierta)
     caja_actual = None
     for caja in caja_model.listar_cajas():
         if caja["id_caja"] == id_caja:
@@ -156,6 +174,7 @@ def estado_caja(id_caja):
         flash("No se puede desactivar una caja que está abierta.", "error")
         return redirect(url_for("caja.cajas"))
 
+    # Alternar: activa (A) <-> inactiva (I). Una caja inactiva no se puede abrir.
     nuevo_estado = "I" if caja_actual["estado"] == "A" else "A"
 
     try:
@@ -167,12 +186,14 @@ def estado_caja(id_caja):
     return redirect(url_for("caja.cajas"))
 
 # ===== Incidencias y vales (solo ADMINISTRADOR) =====
-
+# Incidencia = cierre con faltante o sobrante. Vale = descuento al usuario por
+# un faltante. Estados del vale: P = Pendiente, A = Aplicado, N = Anulado.
 
 
 def mes_seleccionado():
     """Mes de la URL (?mes=2026-10) o el mes actual."""
     mes = request.args.get("mes", "")
+    # Formato esperado "AAAA-MM" (7 caracteres); si no, se usa el mes actual
     if len(mes) != 7:
         mes = datetime.now().strftime("%Y-%m")
     return mes
@@ -184,6 +205,7 @@ def incidencias():
         flash("Solo el administrador puede ver las incidencias.", "error")
         return redirect(url_for("caja.mi_caja"))
 
+    # Toda la información del mes elegido para decidir sanciones (RN-24)
     mes = mes_seleccionado()
     return render_template(
         "caja/incidencias.html",
@@ -203,6 +225,7 @@ def vales():
         flash("Solo el administrador puede gestionar los vales.", "error")
         return redirect(url_for("caja.mi_caja"))
 
+    # Filtro por estado; por defecto se muestran los pendientes
     estado = request.args.get("estado", "P")
     if estado not in ["P", "A", "N"]:
         estado = None   # todos
@@ -218,11 +241,13 @@ def vales():
 
 @caja_bp.route("/vales/aplicar", methods=["POST"])
 def aplicar_vales():
+    """Proceso de fin de mes: marca como aplicados (descontados) los vales pendientes del mes."""
     if not tiene_rol(["ADMINISTRADOR"]):
         return redirect(url_for("caja.mi_caja"))
 
     mes = request.form.get("mes", "")
     try:
+        # SP_APLICAR_VALES_MES devuelve cuántos vales aplicó (parámetro OUT)
         cantidad = caja_model.aplicar_vales_mes(mes)
         if cantidad == 0:
             flash("No hay vales pendientes en " + mes + ".", "error")
@@ -239,12 +264,14 @@ def anular_vale(id_vale):
     if not tiene_rol(["ADMINISTRADOR"]):
         return redirect(url_for("caja.mi_caja"))
 
+    # Un vale se anula cuando el faltante se justifica; el motivo es obligatorio (RN-21)
     motivo = request.form.get("motivo", "").strip()
     if motivo == "":
         flash("Indique el motivo de la anulación.", "error")
         return redirect(url_for("caja.vales"))
 
     try:
+        # anular_vale devuelve False si el vale no estaba pendiente
         if caja_model.anular_vale(id_vale, motivo):
             flash("Vale #" + str(id_vale) + " anulado.", "exito")
         else:

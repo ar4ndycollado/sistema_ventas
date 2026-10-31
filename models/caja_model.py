@@ -1,5 +1,7 @@
 # models/caja_model.py
-# MODELO: cajas, aperturas y cierres
+# MODELO: cajas, aperturas y cierres, incidencias, vales y sanciones.
+# CAJA es el catálogo (Caja 1, Caja 2...). APERTURA_CAJA es cada turno:
+# quién abrió, cuándo, con cuánto y cómo cerró. Toda venta pertenece a una apertura.
 
 from models.conexion import obtener_conexion
 
@@ -19,6 +21,8 @@ def obtener_apertura_activa(id_usuario):
                 ORDER BY a.fecha_apertura DESC
                 FETCH FIRST 1 ROWS ONLY
             """, {"id_usuario": id_usuario})
+            # Usa el índice compuesto APERTURA_CAJA(id_usuario, estado);
+            # esta consulta se repite en cada venta
             fila = cursor.fetchone()
             if fila is not None:
                 apertura = {
@@ -36,6 +40,9 @@ def resumen_apertura(id_apertura):
     resumen = None
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
+            # Cada subconsulta entre paréntesis calcula un dato de las ventas de
+            # esta apertura. FN_EFECTIVO_APERTURA suma solo los pagos en efectivo
+            # de ventas activas (lo que debe haber físicamente en la caja).
             cursor.execute("""
                 SELECT a.id_apertura, c.nombre, a.id_usuario, u.usuario,
                     TO_CHAR(a.fecha_apertura, 'DD/MM/YYYY HH24:MI'),
@@ -81,6 +88,7 @@ def resumen_apertura(id_apertura):
 
 
 def ventas_de_apertura(id_apertura):
+    """Ventas (activas y anuladas) realizadas durante una apertura."""
     ventas = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -107,6 +115,7 @@ def cajas_disponibles():
     cajas = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
+            # NOT EXISTS descarta las cajas que tienen una apertura en estado 'A'
             cursor.execute("""
                 SELECT c.id_caja, c.nombre
                 FROM CAJA c
@@ -121,14 +130,19 @@ def cajas_disponibles():
 
 
 def abrir(id_caja, id_usuario, monto_inicial):
+    """SP_ABRIR_CAJA valida usuario activo, caja activa y que ninguno de los dos
+    tenga otra apertura abierta. Hace su propio COMMIT y devuelve el id (OUT)."""
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
+            # Variable para recibir el parámetro OUT (número de apertura)
             id_apertura_var = cursor.var(int)
             cursor.callproc("SP_ABRIR_CAJA", [id_caja, id_usuario, monto_inicial, id_apertura_var])
             return id_apertura_var.getvalue()
 
 
 def cerrar(id_apertura, id_usuario, monto_contado, observacion):
+    """SP_CERRAR_CAJA calcula el monto esperado y la diferencia, y cambia el estado a 'C'.
+    Si la diferencia es negativa, el trigger TRG_VALE_FALTANTE crea el vale."""
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
             cursor.callproc("SP_CERRAR_CAJA", [id_apertura, id_usuario, monto_contado, observacion])
@@ -172,6 +186,7 @@ def listar_cajas():
     cajas = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
+            # La subconsulta devuelve el usuario que tiene la caja abierta, o NULL si está libre
             cursor.execute("""
                 SELECT c.id_caja, c.nombre, c.estado,
                     (SELECT u.usuario
@@ -193,6 +208,7 @@ def listar_cajas():
 
 
 def registrar_caja(nombre):
+    """Agrega una caja nueva al catálogo, activa desde el inicio."""
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
             cursor.execute("""
@@ -210,6 +226,8 @@ def cambiar_estado_caja(id_caja, nuevo_estado):
         conexion.commit()
 
 # ===== Incidencias (faltantes y sobrantes) =====
+# Las incidencias no se guardan en una tabla: la vista VW_INCIDENCIAS_CAJA las
+# calcula desde la diferencia de cada cierre (evita datos duplicados, 3FN).
 
 def listar_incidencias(mes):
     """Incidencias del mes indicado ('YYYY-MM'), desde la vista VW_INCIDENCIAS_CAJA."""
@@ -244,6 +262,9 @@ def resumen_incidencias(mes):
     resumen = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
+            # Agregación condicional: COUNT/SUM con CASE cuentan por separado
+            # faltantes y sobrantes en una sola consulta.
+            # ORDER BY 2 DESC = ordenar por la 2.ª columna (más faltantes primero).
             cursor.execute("""
                 SELECT usuario,
                     COUNT(CASE WHEN tipo = 'FALTANTE' THEN 1 END),
@@ -269,6 +290,8 @@ def resumen_incidencias(mes):
 # ===== Vales de descuento =====
 
 def listar_vales(estado=None):
+    """Vales de descuento; estado opcional (P, A o N). None = todos.
+    El usuario y la caja se obtienen a través de la apertura que generó el vale."""
     vales = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -323,6 +346,8 @@ def pendientes_por_usuario():
 
 
 def aplicar_vales_mes(mes):
+    """SP_APLICAR_VALES_MES pasa a 'A' (aplicado, con fecha) los vales pendientes
+    del mes y devuelve cuántos cambió en un parámetro OUT."""
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
             cantidad_var = cursor.var(int)
@@ -341,6 +366,8 @@ def anular_vale(id_vale, motivo):
             WHERE id_vale = :id_vale
             AND estado = 'P'
             """, {"motivo": motivo, "id_vale": id_vale})
+            # "AND estado = 'P'" hace que solo cambie si estaba pendiente;
+            # rowcount = 1 confirma que sí se anuló
             anulado = cursor.rowcount == 1
         conexion.commit()
     return anulado
@@ -372,7 +399,9 @@ def listar_anulaciones(mes):
 
 
 def sanciones_mes(mes):
-    """Incidencias sancionables por usuario en el mes, desde la vista VW_SANCIONES_MES."""
+    """Incidencias sancionables por usuario en el mes, desde la vista VW_SANCIONES_MES.
+    La vista suma faltantes no justificados + anulaciones y compara el total con
+    POLITICA_SANCION para sugerir la sanción. La decisión final es del administrador."""
     sanciones = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -396,6 +425,7 @@ def sanciones_mes(mes):
 
 
 def listar_politica():
+    """Tabla de sanciones: a partir de cuántas incidencias aplica cada una (2, 3 y 5)."""
     politica = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:

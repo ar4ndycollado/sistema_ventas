@@ -1,10 +1,13 @@
 # models/proveedor_model.py
-# MODELO: consultas a la tabla PROVEEDORES
+# MODELO: consultas a la tabla PROVEEDORES.
+# Mismo patrón que cliente_model.py: conexión con "with", variables de enlace
+# (:nombre) y resultados convertidos en diccionarios.
 
 from models.conexion import obtener_conexion
 
 
 def listar():
+    """Devuelve todos los proveedores ordenados por nombre."""
     proveedores = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -25,6 +28,7 @@ def listar():
 
 
 def obtener(id_proveedor):
+    """Devuelve un proveedor, o None si no existe."""
     proveedor = None
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -46,6 +50,7 @@ def obtener(id_proveedor):
 
 
 def registrar(proveedor):
+    # El ID lo genera la secuencia SEQ_PROVEEDOR (NEXTVAL = siguiente número)
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
             cursor.execute("""
@@ -81,6 +86,7 @@ def actualizar(id_proveedor, proveedor):
 
 
 def eliminar(id_proveedor):
+    # Si el proveedor tiene compras, Oracle lanza ORA-02292 (FK) y no se borra
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
             cursor.execute("DELETE FROM PROVEEDORES WHERE id_proveedor = :id_proveedor",

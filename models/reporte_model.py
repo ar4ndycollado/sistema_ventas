@@ -1,5 +1,7 @@
 # models/reporte_model.py
-# MODELO: consultas para reportes (agregación, GROUP BY, HAVING, subconsultas y vistas)
+# MODELO: consultas para reportes (agregación, GROUP BY, HAVING, subconsultas y vistas).
+# Casi todos los reportes cuentan solo ventas ACTIVAS (estado = 'A'):
+# una venta anulada no es un ingreso real.
 
 from models.conexion import obtener_conexion
 
@@ -8,6 +10,9 @@ def indicadores_ventas():
     """Agregación condicional: indicadores de las ventas ACTIVAS y conteo de anuladas."""
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
+            # COUNT, SUM, AVG, MAX y MIN en una sola consulta. El CASE deja pasar
+            # solo las ventas activas; las anuladas se cuentan en la última columna.
+            # NVL(…, 0) devuelve 0 en lugar de NULL si todavía no hay ventas.
             cursor.execute("""
                 SELECT COUNT(CASE WHEN estado = 'A' THEN 1 END),
                     NVL(SUM(CASE WHEN estado = 'A' THEN total END), 0),
@@ -29,6 +34,8 @@ def indicadores_ventas():
 
 
 def valor_inventario():
+    """Cuánto vale el inventario de productos activos: a precio de costo y a precio de venta.
+    La diferencia entre ambos es la ganancia esperada si se vendiera todo."""
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
             cursor.execute("""
@@ -53,6 +60,8 @@ def ventas_por_cliente(monto_minimo):
     clientes = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
+            # WHERE filtra filas ANTES de agrupar (solo ventas activas);
+            # HAVING filtra los grupos DESPUÉS de sumar (total del cliente >= mínimo)
             cursor.execute("""
                 SELECT c.nombre,
                     COUNT(v.id_venta),
@@ -70,14 +79,15 @@ def ventas_por_cliente(monto_minimo):
                     "cliente": fila[0],
                     "compras": fila[1],
                     "total": fila[2],
-                    "ultima_compra": fila[3].strftime("%d/%m/%Y")
+                    "ultima_compra": fila[3].strftime("%d/%m/%Y")   # fecha → texto día/mes/año
                 })
     return clientes
 
 
 
 def productos_mas_vendidos():
-    """Usa la vista VW_VENTAS_POR_PRODUCTO."""
+    """Top 5 de productos por unidades vendidas. Usa la vista VW_VENTAS_POR_PRODUCTO,
+    que ya suma las ventas activas por producto."""
     productos = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -101,6 +111,8 @@ def productos_sin_ventas():
     productos = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
+            # La subconsulta (entre paréntesis) devuelve los productos que sí se vendieron;
+            # NOT IN se queda con los que no están en esa lista
             cursor.execute("""
                 SELECT id_producto, nombre, stock, estado
                 FROM PRODUCTOS
@@ -121,6 +133,7 @@ def productos_sin_ventas():
 
 
 def ventas_por_usuario():
+    """Cantidad, total y promedio vendido por cada usuario (GROUP BY)."""
     usuarios = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -146,9 +159,12 @@ def ventas_por_usuario():
 
 
 def ventas_por_mes():
+    """Cantidad y total de ventas por mes, del más antiguo al más reciente."""
     meses = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
+            # TO_CHAR(fecha, 'YYYY-MM') convierte cada fecha en su mes (ej. '2026-10')
+            # para agrupar todas las ventas de ese mes
             cursor.execute("""
                 SELECT TO_CHAR(fecha, 'YYYY-MM') AS mes,
                     COUNT(id_venta),
@@ -171,6 +187,7 @@ def ventas_por_metodo():
     metodos = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
+            # JOIN con VENTAS solo para poder filtrar por el estado de la venta
             cursor.execute("""
                 SELECT m.nombre,
                     COUNT(p.id_pago),
