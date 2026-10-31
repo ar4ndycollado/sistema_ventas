@@ -1,11 +1,12 @@
 # models/producto_model.py
-# MODELO: consultas a la tabla PRODUCTOS y a su auditoría
+# MODELO: consultas a la tabla PRODUCTOS y a su auditoría (AUDITORIA_PRODUCTO)
 
 from models.conexion import obtener_conexion
 
 
 def clasificar(stock, stock_minimo):
-    """Misma regla del cursor de la Actividad 8 del Lab 3."""
+    """Etiqueta que se muestra en la lista según la existencia.
+    Misma regla del cursor de la Actividad 8 del Lab 3."""
     if stock == 0:
         return "AGOTADO"
     elif stock <= stock_minimo:
@@ -15,10 +16,12 @@ def clasificar(stock, stock_minimo):
 
 
 def listar():
+    """Todos los productos (activos e inactivos) con su clasificación de stock."""
     productos = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
-            # Se usa la función FN_STOCK_PRODUCTO creada en el Lab 3
+            # Se usa la función FN_STOCK_PRODUCTO creada en el Lab 3:
+            # así la función PL/SQL se usa desde la aplicación (criterio 32)
             cursor.execute("""
                 SELECT id_producto, nombre, precio_compra, precio_venta,
                     FN_STOCK_PRODUCTO(id_producto) AS stock,
@@ -41,6 +44,7 @@ def listar():
 
 
 def listar_bajo_stock():
+    """Productos con stock en o por debajo de su mínimo (los más urgentes primero)."""
     productos = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -68,6 +72,7 @@ def listar_bajo_stock():
 
 
 def obtener(id_producto):
+    """Devuelve un producto, o None si no existe."""
     producto = None
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -111,11 +116,16 @@ def registrar(producto):
 
 def actualizar(id_producto, producto, usuario_app):
     with obtener_conexion() as conexion:
-        # Enviar a Oracle el usuario de la aplicación (lo lee el trigger de auditoría)
+        # Enviar a Oracle el usuario de la aplicación (lo lee el trigger de auditoría).
+        # Todos se conectan a Oracle como SISTEMA_VENTAS; sin esto el trigger no
+        # sabría qué persona hizo el cambio. Lo lee con
+        # SYS_CONTEXT('USERENV', 'CLIENT_IDENTIFIER').
         conexion.client_identifier = usuario_app
 
         with conexion.cursor() as cursor:
-            # El stock NO se modifica aquí
+            # El stock NO se modifica aquí.
+            # Si cambia precio_venta, el trigger TRG_AUDITORIA_PRECIO guarda
+            # el precio anterior y el nuevo en AUDITORIA_PRODUCTO.
             cursor.execute("""
                 UPDATE PRODUCTOS
                 SET nombre = :nombre,
@@ -134,6 +144,8 @@ def actualizar(id_producto, producto, usuario_app):
 
 
 def cambiar_estado(id_producto, nuevo_estado):
+    """Activa ('A') o desactiva ('I'). Los procedimientos de compra y venta
+    rechazan productos inactivos (RN-09)."""
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
             cursor.execute("""
@@ -144,6 +156,7 @@ def cambiar_estado(id_producto, nuevo_estado):
 
 
 def listar_auditoria():
+    """Cambios de precio registrados por el trigger, del más reciente al más antiguo."""
     registros = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -167,6 +180,7 @@ def listar_auditoria():
     return registros
 
 def listar_activos():
+    """Solo productos activos: es la lista para elegir en compras, ventas y cotizaciones."""
     productos = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:

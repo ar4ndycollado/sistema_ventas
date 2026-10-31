@@ -1,5 +1,6 @@
 # controllers/auth_controller.py
-# CONTROLADOR: inicio y cierre de sesión
+# CONTROLADOR: inicio y cierre de sesión.
+# Es el único módulo que no exige sesión (app.py lo deja pasar).
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import check_password_hash
@@ -25,23 +26,27 @@ def login():
 
     usuario = usuario_model.buscar_usuario(nombre)
 
-    # Validar usuario y contraseña
+    # Validar usuario y contraseña.
+    # En la base solo se guarda el hash; check_password_hash cifra lo escrito
+    # y lo compara con ese hash. El mensaje es el mismo en ambos casos para
+    # no revelar si el usuario existe.
     if usuario is None or not check_password_hash(usuario["password"], password):
         flash("Usuario o contraseña incorrectos.", "error")
         return render_template("login.html")
 
-    # Validar que esté activo
+    # Validar que esté activo (regla RN-01: un usuario inactivo no entra)
     if usuario["estado"] != "A":
         flash("El usuario se encuentra inactivo. Contacte al administrador.", "error")
         return render_template("login.html")
 
-    # Validar que tenga al menos un rol
+    # Validar que tenga al menos un rol (sin rol no podría usar ningún módulo)
     roles = usuario_model.obtener_roles(usuario["id_usuario"])
     if len(roles) == 0:
         flash("El usuario no tiene un rol asignado.", "error")
         return render_template("login.html")
 
-    # Todo correcto: guardar los datos en la sesión
+    # Todo correcto: guardar los datos en la sesión.
+    # La sesión es una cookie firmada; app.py la revisa en cada página.
     session["id_usuario"] = usuario["id_usuario"]
     session["usuario"] = usuario["usuario"]
     session["roles"] = roles
@@ -51,6 +56,7 @@ def login():
 
 @auth_bp.route("/logout")
 def logout():
+    # Borrar todos los datos de la sesión (también los carritos)
     session.clear()
     flash("Sesión cerrada correctamente.", "exito")
     return redirect(url_for("auth.login"))

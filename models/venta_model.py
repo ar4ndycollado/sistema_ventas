@@ -1,15 +1,19 @@
 # models/venta_model.py
-# MODELO: ventas (encabezado) y detalle de ventas
+# MODELO: ventas (encabezado), detalle de ventas y pagos.
+# Maestro–detalle: VENTAS (1) → DETALLE_VENTA (productos) y PAGO_VENTA (pagos).
+# Las reglas importantes (stock, caja abierta, pagos = total) las valida Oracle
+# dentro de los procedimientos SP_*.
 
 import oracledb
 from models.conexion import obtener_conexion
 
 
 def listar():
+    """Todas las ventas (activas y anuladas), la más reciente primero."""
     ventas = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
-            # Se usa la vista VW_RESUMEN_VENTAS
+            # Se usa la vista VW_RESUMEN_VENTAS: ya trae unidos cliente y usuario
             cursor.execute("""
                 SELECT id_venta, fecha, cliente, usuario, total, estado
                 FROM VW_RESUMEN_VENTAS
@@ -28,9 +32,13 @@ def listar():
 
 
 def obtener(id_venta):
+    """Encabezado completo de una venta, o None si no existe."""
     venta = None
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
+            # USUARIO aparece tres veces con distinto alias:
+            #   u  = quien vendió, ua = quien solicitó la anulación, uz = quien la autorizó.
+            # Los dos últimos son LEFT JOIN porque una venta activa no tiene esos datos (NULL).
             cursor.execute("""
                 SELECT v.id_venta, TO_CHAR(v.fecha, 'DD/MM/YYYY HH24:MI'),
                     c.nombre, c.correo, u.usuario, v.id_apertura, v.id_cotizacion, v.total,
@@ -63,6 +71,7 @@ def obtener(id_venta):
                     "motivo_anulacion": fila[11],
                     "direccion": fila[12],
                     "telefono": fila[13],
+                    # Solo se puede anular si la caja de la venta sigue abierta
                     "caja_abierta": fila[14] == "A",
                     "autorizado_por": fila[15]
                 }
@@ -70,6 +79,8 @@ def obtener(id_venta):
 
 
 def obtener_detalle(id_venta):
+    """Productos de una venta con el precio al que se vendieron
+    (se guarda en DETALLE_VENTA porque el precio del catálogo puede cambiar después)."""
     lineas = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -92,18 +103,25 @@ def obtener_detalle(id_venta):
 
 
 def registrar(id_cliente, id_usuario, lineas, pagos, id_cotizacion=None):
-    """Registra la venta completa (productos y pagos) en UNA sola transacción."""
+    """Registra la venta completa (productos y pagos) en UNA sola transacción.
+    Ninguno de los cuatro procedimientos hace COMMIT: si cualquiera falla,
+    el ROLLBACK deshace todo (encabezado, detalles, stock, Kardex, pagos y caja)."""
+    # Sin "with": se controla a mano el commit/rollback y el cierre en "finally"
     conexion = obtener_conexion()
     cursor = conexion.cursor()
 
     try:
+        # Variable para recibir el parámetro OUT del procedimiento (el número de venta)
         id_venta_var = cursor.var(int)
 
         # 1. Encabezado: valida cliente, usuario activo, caja abierta y cotización
         cursor.callproc("SP_CREAR_VENTA", [id_cliente, id_usuario, id_cotizacion, id_venta_var])
         id_venta = id_venta_var.getvalue()
 
-        # 2. Detalle: un procedimiento por cada producto
+        # 2. Detalle: un procedimiento por cada producto.
+        #    SP_AGREGAR_DETALLE_VENTA bloquea el producto (SELECT ... FOR UPDATE),
+        #    revisa el stock, toma el precio del catálogo, baja el stock y
+        #    registra la SALIDA en el Kardex.
         for linea in lineas:
             cursor.callproc("SP_AGREGAR_DETALLE_VENTA", [
                 id_venta,
@@ -112,6 +130,7 @@ def registrar(id_cliente, id_usuario, lineas, pagos, id_cotizacion=None):
             ])
 
         # 3. Pagos: un procedimiento por cada pago
+        #    (valida la referencia de tarjeta/transferencia y el monto recibido en efectivo)
         for pago in pagos:
             cursor.callproc("SP_AGREGAR_PAGO_VENTA", [
                 id_venta,
@@ -124,10 +143,12 @@ def registrar(id_cliente, id_usuario, lineas, pagos, id_cotizacion=None):
         # 4. Valida que los pagos cubran el total y actualiza la caja
         cursor.callproc("SP_FINALIZAR_VENTA", [id_venta])
 
+        # 5. Todo salió bien: confirmar la venta completa
         conexion.commit()
         return id_venta
 
     except oracledb.DatabaseError:
+        # Algo falló: deshacer TODO y volver a lanzar el error al controlador
         conexion.rollback()
         raise
 
@@ -136,6 +157,8 @@ def registrar(id_cliente, id_usuario, lineas, pagos, id_cotizacion=None):
         conexion.close()
 
 def listar_metodos_pago():
+    """Métodos de pago activos (Efectivo, Tarjeta, Transferencia).
+    afecta_caja = 'S' identifica el efectivo: es lo único que suma a la caja."""
     metodos = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -156,6 +179,7 @@ def listar_metodos_pago():
 
 
 def obtener_pagos(id_venta):
+    """Pagos registrados de una venta, con el cambio calculado."""
     pagos = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -180,7 +204,10 @@ def obtener_pagos(id_venta):
     return pagos
 
 def anular(id_venta, id_usuario, id_autoriza, motivo):
-    """SP_ANULAR_VENTA valida que quien autoriza sea ADMINISTRADOR, devuelve el stock y ajusta la caja."""
+    """SP_ANULAR_VENTA valida que quien autoriza sea ADMINISTRADOR, devuelve el stock y ajusta la caja.
+    Recorre los productos de la venta con un cursor: suma el stock y registra
+    una ENTRADA en el Kardex por cada uno. A diferencia de registrar(),
+    este procedimiento sí hace su propio COMMIT."""
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
             cursor.callproc("SP_ANULAR_VENTA", [id_venta, id_usuario, id_autoriza, motivo])

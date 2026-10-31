@@ -1,12 +1,16 @@
 # models/usuario_model.py
-# MODELO: consultas relacionadas con los usuarios y sus roles
+# MODELO: consultas relacionadas con los usuarios y sus roles.
+# Tablas: USUARIO, ROL y USUARIO_ROL (asociativa que resuelve la relación M:N).
 
 from models.conexion import obtener_conexion
 import oracledb
 
 
 def buscar_usuario(nombre_usuario):
-    """Devuelve los datos del usuario o None si no existe."""
+    """Devuelve los datos del usuario o None si no existe.
+    Incluye el hash de la contraseña para que el login lo compare."""
+    # Esta función y obtener_roles() abren y cierran la conexión a mano
+    # (sin "with"); el resultado es el mismo
     conexion = obtener_conexion()
     cursor = conexion.cursor()
 
@@ -37,6 +41,7 @@ def obtener_roles(id_usuario):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
 
+    # JOIN con ROL para obtener el nombre (ADMINISTRADOR, CAJERO...) en lugar del número
     cursor.execute("""
         SELECT r.nombre_rol
         FROM USUARIO_ROL ur
@@ -57,6 +62,8 @@ def listar():
     usuarios = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
+            # LISTAGG une los roles de cada usuario en un texto: "ADMINISTRADOR, CAJERO".
+            # LEFT JOIN para que aparezca también un usuario sin roles.
             cursor.execute("""
                 SELECT u.id_usuario,
                     u.usuario,
@@ -97,6 +104,7 @@ def obtener(id_usuario):
                     "estado": fila[2],
                     "roles": []
                 }
+                # Segunda consulta: los IDs de sus roles, para marcar las casillas del formulario
                 cursor.execute("SELECT id_rol FROM USUARIO_ROL WHERE id_usuario = :id_usuario",
                             {"id_usuario": id_usuario})
                 for fila_rol in cursor.fetchall():
@@ -105,6 +113,7 @@ def obtener(id_usuario):
 
 
 def listar_roles():
+    """Catálogo de roles para mostrar las casillas del formulario."""
     roles = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -120,14 +129,17 @@ def registrar(nombre_usuario, password_encriptada, ids_roles):
     cursor = conexion.cursor()
 
     try:
+        # Se pide el ID antes porque se necesita también para USUARIO_ROL
         cursor.execute("SELECT SEQ_USUARIO.NEXTVAL FROM DUAL")
         id_usuario = cursor.fetchone()[0]
 
+        # 1. El usuario, activo desde el inicio
         cursor.execute("""
             INSERT INTO USUARIO (id_usuario, usuario, password, estado)
             VALUES (:id_usuario, :usuario, :password, 'A')
         """, {"id_usuario": id_usuario, "usuario": nombre_usuario, "password": password_encriptada})
 
+        # 2. Una fila en USUARIO_ROL por cada rol marcado
         for id_rol in ids_roles:
             cursor.execute("INSERT INTO USUARIO_ROL (id_usuario, id_rol) VALUES (:id_usuario, :id_rol)",
                         {"id_usuario": id_usuario, "id_rol": id_rol})
@@ -136,6 +148,7 @@ def registrar(nombre_usuario, password_encriptada, ids_roles):
         return id_usuario
 
     except oracledb.DatabaseError:
+        # Ej.: nombre de usuario repetido (UNIQUE) → no se crea ni el usuario ni sus roles
         conexion.rollback()
         raise
 
@@ -178,6 +191,7 @@ def actualizar(id_usuario, nombre_usuario, password_encriptada, ids_roles):
 
 
 def cambiar_estado(id_usuario, nuevo_estado):
+    """Activa ('A') o desactiva ('I'). Un usuario inactivo no puede iniciar sesión."""
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
             cursor.execute("UPDATE USUARIO SET estado = :estado WHERE id_usuario = :id_usuario",

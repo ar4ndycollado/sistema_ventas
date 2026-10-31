@@ -9,6 +9,8 @@ def ventas_de_hoy(id_usuario=None):
     Si se envía id_usuario, solo cuenta las ventas de ese usuario."""
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
+            # TRUNC quita la hora de la fecha: compara solo el día.
+            # "(:id_usuario IS NULL OR ...)" hace opcional el filtro por usuario.
             cursor.execute("""
                 SELECT COUNT(*), NVL(SUM(total), 0)
                 FROM VENTAS

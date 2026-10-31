@@ -13,7 +13,8 @@ inicio_bp = Blueprint("inicio", __name__)
 
 @inicio_bp.route("/")
 def inicio():
-    # Cada dato se consulta solo si el usuario tiene acceso a ese módulo
+    # Cada dato se consulta solo si el usuario tiene acceso a ese módulo.
+    # None = no mostrar esa tarjeta (la plantilla revisa cada valor).
     ventas_hoy = None
     apertura = None
     bajo_stock = None

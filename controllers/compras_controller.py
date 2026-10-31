@@ -1,5 +1,8 @@
 # controllers/compras_controller.py
-# CONTROLADOR: compras con varios productos (carrito)
+# CONTROLADOR: compras con varios productos (carrito).
+# Flujo: 1) se agregan productos al carrito (guardado en la sesión, aún no en Oracle);
+#        2) al presionar "Registrar", compra_model.registrar() guarda todo
+#           en una sola transacción: encabezado + detalles + stock + Kardex.
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import oracledb
@@ -10,13 +13,17 @@ compras_bp = Blueprint("compras", __name__, url_prefix="/compras")
 
 
 def obtener_carrito():
-    """Devuelve la lista de productos del carrito guardada en la sesión."""
+    """Devuelve la lista de productos del carrito guardada en la sesión.
+    Cada usuario tiene su propio carrito porque cada uno tiene su propia sesión."""
+    # La primera vez el carrito no existe: se crea vacío
     if "carrito_compra" not in session:
         session["carrito_compra"] = []
     return session["carrito_compra"]
 
 
 def calcular_total(carrito):
+    """Suma los subtotales de las líneas del carrito (solo para mostrarlo en pantalla;
+    el total oficial lo calcula Oracle al registrar)."""
     total = 0
     for linea in carrito:
         total = total + linea["subtotal"]
@@ -31,6 +38,7 @@ def lista():
 
 @compras_bp.route("/nueva")
 def nueva():
+    # Pantalla de la compra en proceso: carrito actual + listas para elegir
     carrito = obtener_carrito()
     return render_template(
         "compras/nueva.html",
@@ -43,6 +51,8 @@ def nueva():
 
 @compras_bp.route("/agregar", methods=["POST"])
 def agregar():
+    """Agrega un producto al carrito. Todavía no se guarda nada en Oracle."""
+    # int()/float() fallan con ValueError si el campo está vacío o no es número
     try:
         id_producto = int(request.form["id_producto"])
         cantidad = int(request.form["cantidad"])
@@ -63,6 +73,7 @@ def agregar():
     carrito = obtener_carrito()
 
     # Si el producto ya está en el carrito, solo se suma la cantidad
+    # (y se usa el último precio de costo escrito)
     encontrado = False
     for linea in carrito:
         if linea["id_producto"] == id_producto:
@@ -86,6 +97,7 @@ def agregar():
 
 @compras_bp.route("/quitar/<int:indice>", methods=["POST"])
 def quitar(indice):
+    # indice = posición de la línea en el carrito (0 = primera)
     carrito = obtener_carrito()
     if 0 <= indice < len(carrito):
         carrito.pop(indice)
@@ -95,6 +107,7 @@ def quitar(indice):
 
 @compras_bp.route("/cancelar", methods=["POST"])
 def cancelar():
+    # Basta con borrar el carrito de la sesión: en Oracle no se había guardado nada
     session.pop("carrito_compra", None)
     flash("Compra cancelada.", "exito")
     return redirect(url_for("compras.lista"))
@@ -114,7 +127,9 @@ def registrar():
         return redirect(url_for("compras.nueva"))
 
     try:
+        # Se guarda todo junto; la compra queda a nombre del usuario conectado
         id_compra = compra_model.registrar(int(id_proveedor), session["id_usuario"], carrito)
+        # Compra guardada: se vacía el carrito
         session.pop("carrito_compra", None)
         flash("Compra #" + str(id_compra) + " registrada. Se actualizó el stock y el Kardex.", "exito")
         return redirect(url_for("compras.detalle", id_compra=id_compra))

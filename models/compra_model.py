@@ -1,15 +1,19 @@
 # models/compra_model.py
-# MODELO: compras (encabezado) y detalle de compras
+# MODELO: compras (encabezado) y detalle de compras.
+# Relación maestro–detalle: una fila en COMPRAS y una fila en DETALLE_COMPRA
+# por cada producto comprado.
 
 import oracledb
 from models.conexion import obtener_conexion
 
 
 def listar():
+    """Todas las compras, la más reciente primero, con cuántos productos tiene cada una."""
     compras = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
-            # JOIN entre COMPRAS, PROVEEDORES, USUARIO y DETALLE_COMPRA
+            # JOIN entre COMPRAS, PROVEEDORES, USUARIO y DETALLE_COMPRA.
+            # COUNT + GROUP BY cuenta las líneas de detalle de cada compra.
             cursor.execute("""
                 SELECT c.id_compra,
                     TO_CHAR(c.fecha, 'DD/MM/YYYY HH24:MI'),
@@ -37,6 +41,7 @@ def listar():
 
 
 def obtener(id_compra):
+    """Encabezado de una compra (proveedor, usuario y total), o None si no existe."""
     compra = None
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -62,6 +67,7 @@ def obtener(id_compra):
 
 
 def obtener_detalle(id_compra):
+    """Productos de una compra (las filas de DETALLE_COMPRA)."""
     lineas = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -86,6 +92,8 @@ def obtener_detalle(id_compra):
 def registrar(id_proveedor, id_usuario, lineas):
     """Registra la compra completa en UNA sola transacción.
     Si cualquier producto falla, se deshace todo con ROLLBACK."""
+    # Aquí no se usa "with" porque se necesita controlar a mano
+    # el commit/rollback y cerrar todo en el "finally"
     conexion = obtener_conexion()
     cursor = conexion.cursor()
 
@@ -94,13 +102,17 @@ def registrar(id_proveedor, id_usuario, lineas):
         cursor.execute("SELECT SEQ_COMPRA.NEXTVAL FROM DUAL")
         id_compra = cursor.fetchone()[0]
 
-        # 1. Encabezado (maestro)
+        # 1. Encabezado (maestro). El total empieza en 0:
+        #    el procedimiento lo va sumando con cada producto
         cursor.execute("""
             INSERT INTO COMPRAS (id_compra, fecha, total, id_proveedor, id_usuario)
             VALUES (:id_compra, SYSDATE, 0, :id_proveedor, :id_usuario)
         """, {"id_compra": id_compra, "id_proveedor": id_proveedor, "id_usuario": id_usuario})
 
-        # 2. Detalle: un procedimiento por cada producto del carrito
+        # 2. Detalle: un procedimiento por cada producto del carrito.
+        #    SP_AGREGAR_DETALLE_COMPRA valida el producto, inserta el detalle,
+        #    sube el stock, suma al total de la compra y registra la ENTRADA
+        #    en el Kardex. NO hace COMMIT: eso lo decide este código.
         for linea in lineas:
             cursor.callproc("SP_AGREGAR_DETALLE_COMPRA", [
                 id_compra,
@@ -116,8 +128,10 @@ def registrar(id_proveedor, id_usuario, lineas):
     except oracledb.DatabaseError:
         # Algo falló: deshacer TODO (encabezado, detalles, stock y Kardex)
         conexion.rollback()
+        # "raise" vuelve a lanzar el error para que el controlador muestre el mensaje
         raise
 
     finally:
+        # Se ejecuta siempre, haya error o no
         cursor.close()
         conexion.close()

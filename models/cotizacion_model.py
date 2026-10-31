@@ -6,13 +6,16 @@ from models.conexion import obtener_conexion
 
 
 def caducar_vencidas():
-    """Llama al procedimiento que marca como 'C' las cotizaciones vencidas."""
+    """Llama al procedimiento que marca como 'C' las cotizaciones vencidas.
+    SP_CADUCAR_COTIZACIONES cambia a 'C' las abiertas cuya fecha de
+    vencimiento ya pasó, y hace su propio COMMIT."""
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
             cursor.callproc("SP_CADUCAR_COTIZACIONES")
 
 
 def listar():
+    """Todas las cotizaciones, la más reciente primero."""
     cotizaciones = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -43,6 +46,7 @@ def listar():
 
 
 def obtener(id_cotizacion):
+    """Encabezado de una cotización, o None si no existe."""
     cotizacion = None
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -76,6 +80,8 @@ def obtener(id_cotizacion):
 
 
 def obtener_detalle(id_cotizacion):
+    """Productos de la cotización con el precio cotizado y el stock de hoy
+    (el detalle muestra si todavía alcanza la existencia para venderla)."""
     lineas = []
     with obtener_conexion() as conexion:
         with conexion.cursor() as cursor:
@@ -105,10 +111,11 @@ def registrar(id_cliente, id_usuario, dias_validez, lineas):
     cursor = conexion.cursor()
 
     try:
+        # Pedir primero el número a la secuencia para usarlo en el encabezado y en los detalles
         cursor.execute("SELECT SEQ_COTIZACION.NEXTVAL FROM DUAL")
         id_cotizacion = cursor.fetchone()[0]
 
-        # 1. Encabezado
+        # 1. Encabezado: vence en "dias" a partir de hoy; total en 0 y estado 'A' (abierta)
         cursor.execute("""
             INSERT INTO COTIZACION (id_cotizacion, id_cliente, id_usuario, fecha,
                                     fecha_vencimiento, total, estado)
@@ -117,7 +124,9 @@ def registrar(id_cliente, id_usuario, dias_validez, lineas):
         """, {"id_cotizacion": id_cotizacion, "id_cliente": id_cliente,
             "id_usuario": id_usuario, "dias": dias_validez})
 
-        # 2. Detalle: el precio se toma del catálogo de productos
+        # 2. Detalle: el precio se toma del catálogo de productos.
+        #    INSERT ... SELECT copia el precio_venta directo de PRODUCTOS;
+        #    si el producto está inactivo, el SELECT no devuelve filas y no se inserta nada.
         for linea in lineas:
             cursor.execute("""
                 INSERT INTO DETALLE_COTIZACION (id_detalle_cotizacion, id_cotizacion,
@@ -130,10 +139,11 @@ def registrar(id_cliente, id_usuario, dias_validez, lineas):
             """, {"id_cotizacion": id_cotizacion, "cantidad": linea["cantidad"],
                 "id_producto": linea["id_producto"]})
 
+            # rowcount = 0 → no se insertó la línea; se cancela toda la cotización
             if cursor.rowcount == 0:
                 raise ValueError("El producto " + linea["nombre"] + " no existe o está inactivo.")
 
-        # 3. Total de la cotización
+        # 3. Total de la cotización = suma de los subtotales (subconsulta)
         cursor.execute("""
             UPDATE COTIZACION
             SET total = (SELECT SUM(subtotal) FROM DETALLE_COTIZACION
@@ -145,6 +155,7 @@ def registrar(id_cliente, id_usuario, dias_validez, lineas):
         return id_cotizacion
 
     except (oracledb.DatabaseError, ValueError):
+        # Cualquier error deshace el encabezado y las líneas ya insertadas
         conexion.rollback()
         raise
 
