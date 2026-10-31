@@ -1864,7 +1864,7 @@ DECLARE
 
     -- ===== Anulación autorizada =====
     PROCEDURE anular(p_venta NUMBER, p_solicita NUMBER, p_autoriza NUMBER,
-                     p_motivo VARCHAR2, p_fecha DATE) IS
+                    p_motivo VARCHAR2, p_fecha DATE) IS
     BEGIN
         SP_ANULAR_VENTA(p_venta, p_solicita, p_autoriza, p_motivo);
         UPDATE VENTAS SET fecha_anulacion = p_fecha WHERE id_venta = p_venta;
