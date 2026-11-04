@@ -8,28 +8,62 @@
 </head>
 <body>
     <aside class="menu">
-        <h2 class="logo">Eden Store</h2>
+        <h2 class="logo"><span class="logo-marca">E</span> Eden Store</h2>
 
+        <!-- Usuario conectado: círculo con su inicial, nombre y roles -->
         <div class="usuario-info">
-            <strong>{{ session['usuario'] }}</strong>
-            <span>{{ session['roles'] | join(', ') }}</span>
+            <div class="avatar">{{ session['usuario'][0] | upper }}</div>
+            <div>
+                <strong>{{ session['usuario'] }}</strong>
+                <span>{{ session['roles'] | join(', ') | title }}</span>
+            </div>
         </div>
 
+        <!-- Módulos del menú: (blueprint, ruta, texto). Solo se muestran los que el rol puede usar;
+             el del módulo actual (request.blueprint) se resalta con la clase "activo". -->
+        {% set modulos = [
+            ('inicio', 'inicio.inicio', 'Inicio'),
+            ('clientes', 'clientes.lista', 'Clientes'),
+            ('proveedores', 'proveedores.lista', 'Proveedores'),
+            ('productos', 'productos.lista', 'Productos'),
+            ('compras', 'compras.lista', 'Compras'),
+            ('ventas', 'ventas.lista', 'Ventas'),
+            ('cotizaciones', 'cotizaciones.lista', 'Cotizaciones'),
+            ('caja', 'caja.mi_caja', 'Caja'),
+            ('kardex', 'kardex.lista', 'Kardex'),
+            ('reportes', 'reportes.inicio', 'Reportes'),
+            ('usuarios', 'usuarios.lista', 'Usuarios')
+        ] %}
+        <!-- Ícono de cada módulo (trazos SVG sencillos, estilo "Feather Icons") -->
+        {% set iconos = {
+            'inicio': '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+            'clientes': '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+            'proveedores': '<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
+            'productos': '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+            'compras': '<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>',
+            'ventas': '<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+            'cotizaciones': '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+            'caja': '<rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>',
+            'kardex': '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
+            'reportes': '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+            'usuarios': '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+            'salir': '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'
+        } %}
         <nav>
-            <a href="{{ url_for('inicio.inicio') }}">Inicio</a>
-            {% if tiene_permiso('clientes') %}<a href="{{ url_for('clientes.lista') }}">Clientes</a>{% endif %}
-            {% if tiene_permiso('proveedores') %}<a href="{{ url_for('proveedores.lista') }}">Proveedores</a>{% endif %}
-            {% if tiene_permiso('productos') %}<a href="{{ url_for('productos.lista') }}">Productos</a>{% endif %}
-            {% if tiene_permiso('compras') %}<a href="{{ url_for('compras.lista') }}">Compras</a>{% endif %}
-            {% if tiene_permiso('ventas') %}<a href="{{ url_for('ventas.lista') }}">Ventas</a>{% endif %}
-            {% if tiene_permiso('cotizaciones') %}<a href="{{ url_for('cotizaciones.lista') }}">Cotizaciones</a>{% endif %}
-            {% if tiene_permiso('caja') %}<a href="{{ url_for('caja.mi_caja') }}">Caja</a>{% endif %}
-            {% if tiene_permiso('kardex') %}<a href="{{ url_for('kardex.lista') }}">Kardex</a>{% endif %}
-            {% if tiene_permiso('reportes') %}<a href="{{ url_for('reportes.inicio') }}">Reportes</a>{% endif %}
-            {% if tiene_permiso('usuarios') %}<a href="{{ url_for('usuarios.lista') }}">Usuarios</a>{% endif %}
+            {% for modulo, ruta, texto in modulos %}
+                {% if tiene_permiso(modulo) %}
+                <a href="{{ url_for(ruta) }}" {% if request.blueprint == modulo %}class="activo"{% endif %}>
+                    <svg class="icono" viewBox="0 0 24 24">{{ iconos[modulo] | safe }}</svg>
+                    {{ texto }}
+                </a>
+                {% endif %}
+            {% endfor %}
         </nav>
 
-        <a href="{{ url_for('auth.logout') }}" class="cerrar-sesion">Cerrar sesión</a>
+        <a href="{{ url_for('auth.logout') }}" class="cerrar-sesion">
+            <svg class="icono" viewBox="0 0 24 24">{{ iconos['salir'] | safe }}</svg>
+            Cerrar sesión
+        </a>
     </aside>
 
     <main class="contenido">

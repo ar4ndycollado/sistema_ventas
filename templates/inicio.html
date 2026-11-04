@@ -3,7 +3,7 @@
 {% block titulo %}Inicio{% endblock %}
 
 {% block contenido %}
-<h1>Bienvenido, {{ session['usuario'] }}</h1>
+<h1>¡Hola, {{ session['usuario'] }}! 👋</h1>
 <p class="subtitulo">Rol: {{ session['roles'] | join(', ') }}. Este es el resumen del día.</p>
 
 <!-- Indicadores: cada uno aparece solo si el rol tiene acceso a ese módulo -->

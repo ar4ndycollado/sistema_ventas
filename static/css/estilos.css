@@ -1,12 +1,16 @@
 /* ===== Colores y fuente generales ===== */
 :root {
-    --fondo: #f5f6f8;
+    --fondo: #faf6f6;              /* gris con un toque cálido */
     --blanco: #ffffff;
     --texto: #1f2937;
     --texto-suave: #6b7280;
-    --borde: #e5e7eb;
-    --principal: #2563eb;
-    --principal-oscuro: #1d4ed8;
+    --borde: #efe5e5;
+    --principal: #c62828;          /* rojo de la marca */
+    --principal-oscuro: #9f1d22;
+    --principal-suave: #fdf0f0;    /* fondo rojo muy claro */
+    --menu-arriba: #8e1b20;        /* degradado del menú lateral */
+    --menu-abajo: #b8262c;
+    --sombra: 0 1px 2px rgba(90, 20, 20, 0.05), 0 4px 14px rgba(90, 20, 20, 0.06);
     --exito: #16a34a;
     --error: #dc2626;
 }
@@ -21,32 +25,60 @@ body {
     min-height: 100vh;
 }
 
+/* Enlaces de texto con el color de la marca (los botones y el menú tienen su propio color) */
+a { color: var(--principal); }
+
 /* ===== Menú lateral ===== */
 .menu {
     width: 220px;
-    background: var(--blanco);
-    border-right: 1px solid var(--borde);
+    background: linear-gradient(180deg, var(--menu-arriba), var(--menu-abajo));
+    color: var(--blanco);
     padding: 24px 16px;
 }
 
 .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-size: 18px;
     margin-bottom: 24px;
+    color: var(--blanco);
+}
+
+/* Cuadro con la inicial de la tienda */
+.logo-marca {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--blanco);
     color: var(--principal);
+    font-size: 18px;
+    font-weight: 700;
 }
 
 .menu nav a {
     display: block;
     padding: 10px 12px;
     border-radius: 8px;
-    color: var(--texto);
+    color: rgba(255, 255, 255, 0.85);
     text-decoration: none;
     margin-bottom: 4px;
+    transition: background 0.15s;
 }
 
 .menu nav a:hover {
-    background: var(--fondo);
+    background: rgba(255, 255, 255, 0.14);
+    color: var(--blanco);
+}
+
+/* Módulo en el que está el usuario */
+.menu nav a.activo {
+    background: var(--blanco);
     color: var(--principal);
+    font-weight: 600;
 }
 
 /* ===== Área de contenido ===== */
@@ -61,7 +93,7 @@ h1 { font-size: 24px; margin-bottom: 8px; }
 
 /* ===== Información del usuario en el menú ===== */
 .usuario-info {
-    background: var(--fondo);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 8px;
     padding: 10px 12px;
     margin-bottom: 16px;
@@ -70,7 +102,7 @@ h1 { font-size: 24px; margin-bottom: 8px; }
 
 .usuario-info span {
     display: block;
-    color: var(--texto-suave);
+    color: rgba(255, 255, 255, 0.75);
     font-size: 12px;
     margin-top: 2px;
 }
@@ -86,26 +118,38 @@ h1 { font-size: 24px; margin-bottom: 8px; }
     display: block;
     padding: 10px 12px;
     border-radius: 8px;
-    color: var(--error);
+    color: #fecaca;
     text-decoration: none;
     font-size: 14px;
 }
 
-.cerrar-sesion:hover { background: #fef2f2; }
+.cerrar-sesion:hover { background: rgba(255, 255, 255, 0.14); color: var(--blanco); }
 
 /* ===== Página de login ===== */
 .pagina-login {
     justify-content: center;
     align-items: center;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--menu-arriba), var(--menu-abajo) 60%, #d9464b);
 }
 
 .tarjeta-login {
     background: var(--blanco);
-    border: 1px solid var(--borde);
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 32px;
     width: 100%;
     max-width: 360px;
+    box-shadow: 0 12px 40px rgba(60, 10, 10, 0.25);
+}
+
+.tarjeta-login .logo-marca {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    border-radius: 14px;
+    background: var(--principal);
+    color: var(--blanco);
+    margin-bottom: 14px;
 }
 
 /* ===== Formularios ===== */
@@ -130,6 +174,7 @@ h1 { font-size: 24px; margin-bottom: 8px; }
 .formulario select:focus {
     outline: none;
     border-color: var(--principal);
+    box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.12);
 }
 
 /* ===== Botones ===== */
@@ -141,12 +186,16 @@ h1 { font-size: 24px; margin-bottom: 8px; }
     font-size: 15px;
     cursor: pointer;
     text-decoration: none;
+    transition: background 0.15s, transform 0.15s;
 }
+
+.boton:hover { transform: translateY(-1px); }
 
 .boton-principal {
     background: var(--principal);
     color: var(--blanco);
     width: 100%;
+    box-shadow: 0 2px 6px rgba(198, 40, 40, 0.25);
 }
 
 .boton-principal:hover { background: var(--principal-oscuro); }
@@ -198,9 +247,10 @@ h1 { font-size: 24px; margin-bottom: 8px; }
 .tarjeta {
     background: var(--blanco);
     border: 1px solid var(--borde);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 20px;
     overflow-x: auto;
+    box-shadow: var(--sombra);
 }
 
 .tarjeta-formulario { max-width: 520px; }
@@ -214,11 +264,18 @@ h1 { font-size: 24px; margin-bottom: 8px; }
 
 .tabla th {
     text-align: left;
-    color: var(--texto-suave);
+    color: var(--principal-oscuro);
+    background: var(--principal-suave);
+    font-size: 12px;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
     padding: 10px 12px;
     border-bottom: 1px solid var(--borde);
 }
+
+.tabla th:first-child { border-top-left-radius: 8px; }
+.tabla th:last-child  { border-top-right-radius: 8px; }
 
 .tabla td {
     padding: 10px 12px;
@@ -357,9 +414,10 @@ h1 { font-size: 24px; margin-bottom: 8px; }
     font-size: 14px;
 }
 
+/* Los avisos y etiquetas azules conservan su color: indican información, no la marca */
 .aviso-ok {
     background: #eff6ff;
-    color: var(--principal-oscuro);
+    color: #1d4ed8;
     border: 1px solid #bfdbfe;
 }
 
@@ -369,7 +427,7 @@ h1 { font-size: 24px; margin-bottom: 8px; }
     border: 1px solid #fde68a;
 }
 
-.etiqueta-azul { background: #eff6ff; color: var(--principal-oscuro); }
+.etiqueta-azul { background: #eff6ff; color: #1d4ed8; }
 
 /* ===== Indicadores (tarjetas con montos) ===== */
 .indicadores {
@@ -382,8 +440,10 @@ h1 { font-size: 24px; margin-bottom: 8px; }
 .indicador {
     background: var(--blanco);
     border: 1px solid var(--borde);
+    border-top: 3px solid var(--principal);   /* franja roja arriba */
     border-radius: 12px;
     padding: 16px;
+    box-shadow: var(--sombra);
 }
 
 .indicador span {
@@ -519,12 +579,145 @@ h1 { font-size: 24px; margin-bottom: 8px; }
 .texto-pendiente { color: #a16207; }
 
 /* ===== Botón rojo para acciones destructivas ===== */
+/* Más oscuro que el rojo principal para que se distinga */
 .boton-peligro-lleno {
-    background: var(--error);
+    background: #7f1d1d;
     color: var(--blanco);
 }
 
-.boton-peligro-lleno:hover { background: #b91c1c; }
+.boton-peligro-lleno:hover { background: #651515; }
+
+/* ===== Detalles amigables ===== */
+
+/* Íconos del menú (dibujados con trazos, toman el color del texto) */
+.menu nav a,
+.cerrar-sesion {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.icono {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Círculo con la inicial del usuario */
+.usuario-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--blanco);
+    color: var(--principal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+/* El contenido aparece con una entrada suave al abrir cada página */
+.contenido { animation: aparecer 0.3s ease-out; }
+
+@keyframes aparecer {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+}
+
+h1 { font-weight: 700; letter-spacing: -0.3px; }
+
+/* Etiquetas en formulario más legibles */
+.formulario label { color: var(--texto); font-weight: 500; }
+.formulario input,
+.formulario select,
+.formulario textarea { border-radius: 10px; }
+
+/* Alertas y avisos con ícono a la izquierda y franja de color */
+.alerta,
+.aviso {
+    position: relative;
+    padding-left: 42px;
+}
+
+.alerta::before,
+.aviso::before {
+    position: absolute;
+    left: 12px;
+    top: 9px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--blanco);
+}
+
+.alerta-exito::before  { content: "✓"; background: var(--exito); }
+.alerta-error::before  { content: "!"; background: var(--error); }
+.aviso-ok::before      { content: "i"; background: #1d4ed8; }
+.aviso-alerta::before  { content: "!"; background: #ca8a04; }
+
+.alerta-exito  { border-left: 4px solid var(--exito); }
+.alerta-error  { border-left: 4px solid var(--error); }
+.aviso-ok      { border-left: 4px solid #1d4ed8; }
+.aviso-alerta  { border-left: 4px solid #ca8a04; }
+
+/* Punto de color dentro de cada etiqueta de estado */
+.etiqueta::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    margin-right: 6px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+
+/* Filas alternadas y resaltado suave al pasar el mouse */
+.tabla tbody tr:nth-child(even) { background: #fdfafa; }
+.tabla tbody tr:hover { background: var(--principal-suave); }
+
+/* Mensaje de lista vacía más amable */
+.vacio::before {
+    content: "📭";
+    display: block;
+    font-size: 28px;
+    margin-bottom: 6px;
+}
+
+/* Indicadores que se elevan un poco al pasar el mouse */
+.indicador { transition: transform 0.15s, box-shadow 0.15s; }
+.indicador:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(90, 20, 20, 0.10);
+}
+
+/* Botones pequeños y filtros con resaltado rojo claro */
+.boton-chico { transition: background 0.15s, border-color 0.15s; }
+.boton-chico:hover { background: var(--principal-suave); }
+
+.filtros a { transition: border-color 0.15s, color 0.15s; }
+.filtros a:hover { border-color: var(--principal); color: var(--principal); }
+.filtros a.activo:hover { color: var(--blanco); }
 
 /* ===== Diseño responsive (celulares y tablets) ===== */
 
@@ -540,8 +733,6 @@ h1 { font-size: 24px; margin-bottom: 8px; }
 
     .menu {
         width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--borde);
         padding: 12px 16px;
     }
 

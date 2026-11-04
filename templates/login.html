@@ -8,8 +8,9 @@
 </head>
 <body class="pagina-login">
     <div class="tarjeta-login">
+        <span class="logo-marca">E</span>
         <h1>Eden Store</h1>
-        <p class="subtitulo">Sistema de Ventas</p>
+        <p class="subtitulo">¡Bienvenido! Inicia sesión para continuar.</p>
 
         {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
             <div class="alerta alerta-{{ categoria }}">{{ mensaje }}</div>
