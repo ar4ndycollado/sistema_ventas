@@ -719,6 +719,33 @@ h1 { font-weight: 700; letter-spacing: -0.3px; }
 .filtros a:hover { border-color: var(--principal); color: var(--principal); }
 .filtros a.activo:hover { color: var(--blanco); }
 
+/* Accesos rápidos de la página de inicio */
+.accesos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.acceso {
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: var(--blanco);
+    border: 1px solid var(--borde);
+    box-shadow: var(--sombra);
+    color: var(--texto);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: transform 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.acceso:hover {
+    transform: translateY(-2px);
+    border-color: var(--principal);
+    color: var(--principal);
+}
+
 /* ===== Diseño responsive (celulares y tablets) ===== */
 
 /* Permite que el contenido se encoja; las tablas anchas se desplazan dentro de su tarjeta */

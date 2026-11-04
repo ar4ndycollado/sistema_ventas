@@ -38,6 +38,16 @@
     {% endif %}
 </div>
 
+<!-- Accesos rápidos: cada botón aparece solo si el rol puede usar ese módulo -->
+<div class="accesos">
+    {% if tiene_permiso('ventas') %}<a href="{{ url_for('ventas.nueva') }}" class="acceso">🛍️ Nueva venta</a>{% endif %}
+    {% if tiene_permiso('cotizaciones') %}<a href="{{ url_for('cotizaciones.nueva') }}" class="acceso">📝 Nueva cotización</a>{% endif %}
+    {% if tiene_permiso('compras') %}<a href="{{ url_for('compras.nueva') }}" class="acceso">🛒 Nueva compra</a>{% endif %}
+    {% if tiene_permiso('clientes') %}<a href="{{ url_for('clientes.nuevo') }}" class="acceso">👤 Nuevo cliente</a>{% endif %}
+    {% if tiene_permiso('kardex') %}<a href="{{ url_for('kardex.lista') }}" class="acceso">📋 Ver Kardex</a>{% endif %}
+    {% if tiene_permiso('reportes') %}<a href="{{ url_for('reportes.inicio') }}" class="acceso">📊 Reportes</a>{% endif %}
+</div>
+
 <!-- Lista de productos con bajo stock -->
 {% if bajo_stock %}
 <div class="tarjeta">

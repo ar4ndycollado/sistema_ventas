@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recibo #{{ venta.id_venta }}</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -24,6 +25,22 @@
         }
         .centro { text-align: center; }
         .negocio { font-size: 22px; font-weight: 700; color: #c62828; }
+        /* Logo: cuadro rojo con la inicial de la tienda */
+        .logo-recibo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #c62828;
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            -webkit-print-color-adjust: exact;   /* que el color salga también al imprimir */
+            print-color-adjust: exact;
+        }
         .dato { font-size: 13px; color: #6b7280; }
         .titulo {
             margin: 18px 0 4px;
@@ -83,6 +100,7 @@
         {% if venta.estado == 'N' %}<div class="sello">ANULADA</div>{% endif %}
 
         <div class="centro">
+            <div class="logo-recibo">E</div>
             <p class="negocio">{{ negocio.nombre }}</p>
             <p class="dato">{{ negocio.direccion }}</p>
             <p class="dato">Tel. {{ negocio.telefono }} · NIT {{ negocio.nit }}</p>
