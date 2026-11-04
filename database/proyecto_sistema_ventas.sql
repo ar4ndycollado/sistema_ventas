@@ -1864,7 +1864,7 @@ DECLARE
 
     -- ===== Anulación autorizada =====
     PROCEDURE anular(p_venta NUMBER, p_solicita NUMBER, p_autoriza NUMBER,
-                     p_motivo VARCHAR2, p_fecha DATE) IS
+                    p_motivo VARCHAR2, p_fecha DATE) IS
     BEGIN
         SP_ANULAR_VENTA(p_venta, p_solicita, p_autoriza, p_motivo);
         UPDATE VENTAS SET fecha_anulacion = p_fecha WHERE id_venta = p_venta;
@@ -2120,10 +2120,10 @@ UNION ALL SELECT 'POLITICA_SANCION',   COUNT(*) FROM POLITICA_SANCION;
 
 -- 11.2 Inventario: el stock debe coincidir con entradas - salidas del Kardex
 SELECT p.id_producto,
-       p.nombre,
-       p.stock AS stock_tabla,
-       NVL(SUM(k.cantidad_entrada), 0) - NVL(SUM(k.cantidad_salida), 0) AS stock_segun_kardex,
-       CASE WHEN p.stock = NVL(SUM(k.cantidad_entrada), 0) - NVL(SUM(k.cantidad_salida), 0)
+    p.nombre,
+    p.stock AS stock_tabla,
+    NVL(SUM(k.cantidad_entrada), 0) - NVL(SUM(k.cantidad_salida), 0) AS stock_segun_kardex,
+    CASE WHEN p.stock = NVL(SUM(k.cantidad_entrada), 0) - NVL(SUM(k.cantidad_salida), 0)
             THEN 'OK' ELSE 'DESCUADRE' END AS verificacion
 FROM PRODUCTOS p
 LEFT JOIN KARDEX k ON p.id_producto = k.id_producto
@@ -2132,10 +2132,10 @@ ORDER BY p.id_producto;
 
 -- 11.3 Ventas: el total debe ser la suma de sus detalles
 SELECT v.id_venta,
-       v.estado,
-       v.total,
-       SUM(d.subtotal) AS suma_detalle,
-       CASE WHEN v.total = SUM(d.subtotal) THEN 'OK' ELSE 'DESCUADRE' END AS verificacion
+    v.estado,
+    v.total,
+    SUM(d.subtotal) AS suma_detalle,
+    CASE WHEN v.total = SUM(d.subtotal) THEN 'OK' ELSE 'DESCUADRE' END AS verificacion
 FROM VENTAS v
 JOIN DETALLE_VENTA d ON v.id_venta = d.id_venta
 GROUP BY v.id_venta, v.estado, v.total
@@ -2143,9 +2143,9 @@ ORDER BY v.id_venta;
 
 -- 11.4 Pagos: la suma de los pagos debe ser igual al total de cada venta
 SELECT v.id_venta,
-       v.total,
-       NVL(SUM(p.monto), 0) AS pagado,
-       CASE WHEN v.total = NVL(SUM(p.monto), 0) THEN 'OK' ELSE 'DESCUADRE' END AS verificacion
+    v.total,
+    NVL(SUM(p.monto), 0) AS pagado,
+    CASE WHEN v.total = NVL(SUM(p.monto), 0) THEN 'OK' ELSE 'DESCUADRE' END AS verificacion
 FROM VENTAS v
 LEFT JOIN PAGO_VENTA p ON v.id_venta = p.id_venta
 GROUP BY v.id_venta, v.total
@@ -2153,14 +2153,14 @@ ORDER BY v.id_venta;
 
 -- 11.5 Caja: monto esperado = monto inicial + efectivo de las ventas activas
 SELECT a.id_apertura,
-       u.usuario,
-       a.estado,
-       a.monto_inicial,
-       FN_EFECTIVO_APERTURA(a.id_apertura) AS efectivo_ventas,
-       a.monto_esperado,
-       a.monto_contado,
-       a.diferencia,
-       CASE WHEN a.monto_esperado = a.monto_inicial + FN_EFECTIVO_APERTURA(a.id_apertura)
+    u.usuario,
+    a.estado,
+    a.monto_inicial,
+    FN_EFECTIVO_APERTURA(a.id_apertura) AS efectivo_ventas,
+    a.monto_esperado,
+    a.monto_contado,
+    a.diferencia,
+    CASE WHEN a.monto_esperado = a.monto_inicial + FN_EFECTIVO_APERTURA(a.id_apertura)
             THEN 'OK' ELSE 'DESCUADRE' END AS verificacion
 FROM APERTURA_CAJA a
 JOIN USUARIO u ON a.id_usuario = u.id_usuario
@@ -2185,7 +2185,7 @@ ORDER BY id_apertura;
 
 -- 11.8 Estados de cotizaciones (A=Abierta, C=Caducada, F=Facturada)
 SELECT c.id_cotizacion, cl.nombre AS cliente, c.fecha, c.fecha_vencimiento, c.total, c.estado,
-       (SELECT v.id_venta FROM VENTAS v WHERE v.id_cotizacion = c.id_cotizacion) AS venta_generada
+    (SELECT v.id_venta FROM VENTAS v WHERE v.id_cotizacion = c.id_cotizacion) AS venta_generada
 FROM COTIZACION c
 JOIN CLIENTES cl ON c.id_cliente = cl.id_cliente
 ORDER BY c.id_cotizacion;
@@ -2218,12 +2218,12 @@ FROM PRODUCTOS
 WHERE id_producto NOT IN (SELECT d.id_producto
                             FROM DETALLE_VENTA d
                             JOIN VENTAS v ON d.id_venta = v.id_venta
-                           WHERE v.estado = 'A')
+                        WHERE v.estado = 'A')
 ORDER BY id_producto;
 
 -- 11.13 Job programado
 SELECT job_name, enabled, state, repeat_interval,
-       TO_CHAR(next_run_date, 'DD/MM/YYYY HH24:MI') AS proxima_ejecucion
+    TO_CHAR(next_run_date, 'DD/MM/YYYY HH24:MI') AS proxima_ejecucion
 FROM USER_SCHEDULER_JOBS;
 
 -- 11.14 Llaves foráneas sin índice (debe devolver 0 filas)

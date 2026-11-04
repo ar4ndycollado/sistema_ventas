@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar sesión · Eden Store</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
 </head>
 <body class="pagina-login">
     <div class="tarjeta-login">
+        <span class="logo-marca">E</span>
         <h1>Eden Store</h1>
-        <p class="subtitulo">Sistema de Ventas</p>
+        <p class="subtitulo">¡Bienvenido! Inicia sesión para continuar.</p>
 
         {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
             <div class="alerta alerta-{{ categoria }}">{{ mensaje }}</div>
