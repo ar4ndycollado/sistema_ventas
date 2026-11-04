@@ -133,24 +133,97 @@ h1 { font-size: 24px; margin-bottom: 8px; }
     background: linear-gradient(135deg, var(--menu-arriba), var(--menu-abajo) 60%, #d9464b);
 }
 
-.tarjeta-login {
-    background: var(--blanco);
-    border-radius: 16px;
-    padding: 32px;
+/* Tarjeta con dos paneles: marca (rojo) y formulario (blanco) */
+.login-contenedor {
+    display: flex;
     width: 100%;
-    max-width: 360px;
-    box-shadow: 0 12px 40px rgba(60, 10, 10, 0.25);
+    max-width: 860px;
+    min-height: 480px;
+    background: var(--blanco);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(60, 10, 10, 0.35);
+    animation: aparecer 0.4s ease-out;
 }
 
-.tarjeta-login .logo-marca {
-    width: 48px;
-    height: 48px;
-    font-size: 24px;
-    border-radius: 14px;
-    background: var(--principal);
+/* Panel izquierdo */
+.login-marca {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 36px;
     color: var(--blanco);
-    margin-bottom: 14px;
+    background: linear-gradient(160deg, var(--menu-arriba), var(--principal));
 }
+
+/* Círculos decorativos transparentes */
+.login-marca::before,
+.login-marca::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.login-marca::before { width: 260px; height: 260px; right: -90px; top: -80px; }
+.login-marca::after  { width: 180px; height: 180px; left: -60px; bottom: -70px; }
+
+.login-marca .logo { margin-bottom: 0; font-weight: 600; }
+
+.login-mensaje { position: relative; }   /* queda por encima de los círculos */
+
+.login-mensaje h2 {
+    font-size: 26px;
+    line-height: 1.25;
+    margin-bottom: 10px;
+}
+
+.login-mensaje p {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 15px;
+    margin-bottom: 20px;
+}
+
+.login-lista { list-style: none; }
+
+.login-lista li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+/* Cada ícono de la lista dentro de un cuadro translúcido */
+.login-lista span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.login-pie {
+    position: relative;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Panel derecho */
+.login-formulario {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 36px;
+}
+
+.login-formulario .boton-principal { width: 100%; margin-top: 4px; }
 
 /* ===== Formularios ===== */
 .formulario label {
@@ -231,7 +304,6 @@ h1 { font-size: 24px; margin-bottom: 8px; }
 
 /* El botón principal ocupa todo el ancho solo en el login */
 .boton-principal { width: auto; }
-.tarjeta-login .boton-principal { width: 100%; }
 
 .boton-secundario {
     background: var(--blanco);
@@ -792,4 +864,13 @@ h1 { font-weight: 700; letter-spacing: -0.3px; }
     .campo-ancho { min-width: 100%; }
     .tarjeta-formulario { max-width: 100%; }
     .tarjeta { padding: 14px; }
+
+    /* Login: los dos paneles se apilan y la lista de módulos se oculta */
+    .login-contenedor { flex-direction: column; min-height: 0; }
+    .login-marca { padding: 24px; }
+    .login-marca .logo { margin-bottom: 14px; }
+    .login-mensaje h2 { font-size: 20px; }
+    .login-lista,
+    .login-pie { display: none; }
+    .login-formulario { padding: 28px 24px; }
 }
