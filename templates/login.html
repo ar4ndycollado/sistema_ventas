@@ -8,24 +8,49 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
 </head>
 <body class="pagina-login">
-    <div class="tarjeta-login">
-        <span class="logo-marca">E</span>
-        <h1>Eden Store</h1>
-        <p class="subtitulo">¡Bienvenido! Inicia sesión para continuar.</p>
+    <div class="login-contenedor">
 
-        {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
-            <div class="alerta alerta-{{ categoria }}">{{ mensaje }}</div>
-        {% endfor %}
+        <!-- Panel izquierdo: presentación de la tienda (solo decorativo) -->
+        <section class="login-marca">
+            <div class="logo">
+                <span class="logo-marca">E</span> Eden Store
+            </div>
 
-        <form method="POST" class="formulario">
-            <label for="usuario">Usuario</label>
-            <input type="text" id="usuario" name="usuario" autofocus>
+            <div class="login-mensaje">
+                <h2>Tu tienda de cómputo, bajo control.</h2>
+                <p>Ventas, inventario y caja en un solo lugar, conectado a Oracle.</p>
 
-            <label for="password">Contraseña</label>
-            <input type="password" id="password" name="password">
+                <ul class="login-lista">
+                    <li><span>🛍️</span> Ventas con pagos combinados y recibo</li>
+                    <li><span>📦</span> Inventario y Kardex al día</li>
+                    <li><span>💵</span> Apertura y cierre de caja</li>
+                    <li><span>📊</span> Reportes para tomar decisiones</li>
+                </ul>
+            </div>
 
-            <button type="submit" class="boton boton-principal">Iniciar sesión</button>
-        </form>
+            <p class="login-pie">Proyecto final · Base de Datos I</p>
+        </section>
+
+        <!-- Panel derecho: formulario de inicio de sesión -->
+        <section class="login-formulario">
+            <h1>¡Bienvenido! 👋</h1>
+            <p class="subtitulo">Ingresa tus datos para continuar.</p>
+
+            {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
+                <div class="alerta alerta-{{ categoria }}">{{ mensaje }}</div>
+            {% endfor %}
+
+            <form method="POST" class="formulario">
+                <label for="usuario">Usuario</label>
+                <input type="text" id="usuario" name="usuario" placeholder="Tu usuario" autofocus>
+
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" placeholder="••••••••">
+
+                <button type="submit" class="boton boton-principal">Iniciar sesión</button>
+            </form>
+        </section>
+
     </div>
 </body>
 </html>
