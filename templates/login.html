@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar sesión · Eden Store</title>
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+    <!-- v = versión de los estilos: al cambiar el CSS se sube el número para que el navegador no use la copia vieja -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css', v=2) }}">
 </head>
 <body class="pagina-login">
     <div class="login-contenedor">
